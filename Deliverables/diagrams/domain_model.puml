@@ -1,0 +1,137 @@
+@startuml Domain_Model_Coffeetaria
+!theme plain
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #444444
+skinparam classHeaderBackgroundColor #2C3E50
+skinparam classHeaderFontColor #FFFFFF
+skinparam arrowColor #444444
+skinparam shadowing false
+skinparam packageBackgroundColor #EBF5FB
+skinparam packageBorderColor #2980B9
+skinparam packageFontColor #1A5276
+skinparam packageFontStyle bold
+
+title Domain Model - Coffeetaria
+
+' --- AGGREGATE: USER ---
+package "Aggregate: User" #EBF5FB {
+
+    class User <<Aggregate Root>> {
+        + id : UUID
+        + name : String
+        + email : Email
+        + passwordHash : String
+        + role : Role
+        + active : Boolean
+        + createdAt : DateTime
+        --
+        + register()
+        + authenticate()
+        + changeRole(role: Role)
+        + deactivate()
+    }
+
+    class Email <<Value Object>> {
+        + value : String
+        --
+        + validate()
+    }
+
+    enum Role <<Enumeration>> {
+        CLIENT
+        EMPLOYEE
+        ADMIN
+    }
+
+    User *-- Email : has >
+    User *-- Role  : has >
+}
+
+' --- AGGREGATE: MENU ---
+package "Aggregate: Menu" #E9F7EF {
+
+    class Menu <<Aggregate Root>> {
+        + id : UUID
+        + date : LocalDate
+        + publishedBy : UUID
+        + active : Boolean
+        --
+        + publish()
+        + addDish(dish: Dish)
+        + removeDish(dishId: UUID)
+    }
+
+    class Dish <<Entity>> {
+        + id : UUID
+        + name : String
+        + description : String
+        + price : Money
+        + active : Boolean
+    }
+
+    class Ingredient <<Entity>> {
+        + id : UUID
+        + name : String
+        + stock : Integer
+        + isAllergen : Boolean
+        + dietaryTags : List<String>
+    }
+
+    class Money <<Value Object>> {
+        + amount : BigDecimal
+        + currency : String
+    }
+
+    Menu "1" *-- "1..*" Dish       : contains >
+    Dish "1" *-- "1..*" Ingredient : composed of >
+    Dish      *--        Money      : priced with >
+}
+
+' --- AGGREGATE: ORDER ---
+package "Aggregate: Order" #FEF9E7 {
+
+    class Order <<Aggregate Root>> {
+        + id : UUID
+        + reference : OrderRef
+        + clientId : UUID
+        + status : OrderStatus
+        + placedAt : DateTime
+        + updatedAt : DateTime
+        --
+        + place()
+        + updateStatus(status: OrderStatus)
+    }
+
+    class OrderItem <<Entity>> {
+        + dishId : UUID
+        + dishName : String
+        + unitPrice : Money
+        + quantity : Integer
+    }
+
+    class OrderRef <<Value Object>> {
+        + value : String
+    }
+
+    enum OrderStatus <<Enumeration>> {
+        PENDING
+        PREPARING
+        READY
+        DELIVERED
+    }
+
+    Order "1" *-- "1..*" OrderItem : contains >
+    Order     *--         OrderRef  : identified by >
+    Order     *--         OrderStatus : has >
+    OrderItem *--         Money       : priced with >
+}
+
+' --- CROSS-AGGREGATE REFERENCES ---
+User ..> Order : places (clientId) >
+User ..> Menu  : publishes (publishedBy) >
+
+@enduml
