@@ -14,7 +14,7 @@
 
 ## System Description
 
-Coffeetaria is a cafeteria management backend system (REST API + relational database) that enables clients to browse daily menus and place orders, employees to fulfill orders, and administrators to manage the full system. The system also performs OS-level operations such as generating reports and writing audit logs to the filesystem.
+Coffeetaria is a cafeteria management backend system (REST API + relational database) that enables clients to browse daily menus and place purchases, employees to fulfill purchases, and administrators to manage the full system. The system also performs OS-level operations such as generating reports and writing audit logs to the filesystem.
 
 ---
 
@@ -25,7 +25,8 @@ Coffeetaria is a cafeteria management backend system (REST API + relational data
 | [Analysis & Requirements](./analysis.md) | User stories, functional requirements, non-functional requirements, secure development requirements, and abuse cases |
 | [Design](./design.md) | System architecture, domain model, DFDs (Level 0, 1 & 2), secure design decisions, secure coding guidelines, dependency analysis |
 | [Threat Analysis](./threat_analysis.md) | STRIDE threat identification per DFD element, risk assessment, and mitigations |
-| [Security Testing Plan](./security_testing.md) | Security testing methodology, test cases linked to threats and requirements, ASVS checklist |
+| [Security Testing Plan](./security_testing.md) | Security testing methodology, test cases linked to threats and requirements |
+| [ASVS 5.0 Tracker](./ASVS_5_0_Tracker.xlsx) | OWASP ASVS 5.0 compliance checklist (V1–V17) with status, observations, and references per requirement |
 
 ---
 
@@ -49,4 +50,4 @@ Coffeetaria is a cafeteria management backend system (REST API + relational data
 - [x] Risk assessment → [`threat_analysis.md §2`](./threat_analysis.md)
 - [x] Mitigations → [`threat_analysis.md §3`](./threat_analysis.md)
 - [x] Security testing plan → [`security_testing.md`](./security_testing.md)
-- [x] ASVS checklist → [`security_testing.md §3`](./security_testing.md)
+- [x] ASVS 5.0 checklist → [`ASVS_5_0_Tracker.xlsx`](./ASVS_5_0_Tracker.xlsx)
