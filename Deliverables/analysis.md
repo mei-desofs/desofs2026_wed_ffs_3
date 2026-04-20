@@ -7,7 +7,7 @@ Coffeetaria is a cafeteria management backend system that allows clients to brow
 **Domain Aggregates (DDD):**
 - **User** – manages identity, credentials, and roles
 - **Menu** – manages dishes, ingredients, and daily availability
-- **Order** – manages the purchase lifecycle from placement to fulfillment
+- **Purchase** – manages the purchase lifecycle from placement to fulfillment
 
 **Roles:**
 - `CLIENT` – authenticated customer who browses and orders
@@ -26,7 +26,7 @@ User stories capture functional intent from each role's perspective. Each story 
 |----|------|-------|---------------------|
 | US01 | Visitor | As a visitor, I want to register with a username and password so that I can access the system as a client | Password must meet complexity rules (≥ 12 chars); duplicate usernames are rejected |
 | US02 | User | As a registered user, I want to log in with my credentials so that I receive a JWT token to access protected resources | Failed attempts are counted; account is locked after repeated failures |
-| US03 | User | As an authenticated user, I want to log out so that my session token is invalidated and cannot be reused | Token is added to a blocklist on logout; subsequent requests with that token return HTTP 401 |
+| US03 | User | As an authenticated user, I want to log out so that my session token is invalidated and cannot be reused | On logout the server increments the user's `tokenVersion` in the database; subsequent requests with the old token are rejected with HTTP 401 |
 | US04 | Admin | As an admin, I want to deactivate a user account so that a departing employee or abusive client loses access immediately | Deactivation takes effect on the next request; existing tokens for that user are rejected |
 
 ### User Management
@@ -45,13 +45,13 @@ User stories capture functional intent from each role's perspective. Each story 
 | US09 | Admin / Employee | As an admin or employee, I want to publish a daily menu selecting available dishes so that clients can browse and order | Menu publication is restricted to ADMIN and EMPLOYEE; employees may only publish menus for future dates |
 | US10 | Client | As a client, I want to view the current menu including allergen information so that I can make an informed choice | Allergen data is displayed for all authenticated users; no role restriction needed |
 
-### Order Management
+### Purchase Management
 
 | ID | Role | Story | Security Constraint |
 |----|------|-------|---------------------|
-| US11 | Client | As a client, I want to place an order from the available menu so that my meal is reserved for collection | Order is linked to the authenticated user's JWT `sub`; client-supplied user IDs in the request body are ignored |
-| US12 | Client | As a client, I want to view my own order history so that I can track past purchases | Clients can only retrieve their own orders; IDOR attempts return HTTP 403 |
-| US13 | Employee | As an employee, I want to list all pending orders and update their status so that I can manage fulfillment efficiently | Only EMPLOYEE and ADMIN roles can change order status; status transitions follow the defined lifecycle |
+| US11 | Client | As a client, I want to place a purchase from the available menu so that my meal is reserved for collection | Purchase is linked to the authenticated user's JWT `sub`; client-supplied user IDs in the request body are ignored |
+| US12 | Client | As a client, I want to view my own purchase history so that I can track past purchases | Clients can only retrieve their own purchases; IDOR attempts return HTTP 403 |
+| US13 | Employee | As an employee, I want to list all pending purchases and update their status so that I can manage fulfillment efficiently | Only EMPLOYEE and ADMIN roles can change purchase status; status transitions follow the defined lifecycle |
 
 ### Reporting & File Operations
 
@@ -96,19 +96,19 @@ User stories capture functional intent from each role's perspective. Each story 
 | FR14 | The system shall allow all authenticated users to view the current menu |
 | FR15 | The system shall allow filtering of dishes by allergens or dietary tags |
 
-### 1.4 Order Management
+### 1.4 Purchase Management
 
 | ID | Requirement |
 |----|-------------|
-| FR16 | The system shall allow clients to place an order for a future date from the available menu |
-| FR17 | The system shall assign a unique order reference to each placed order |
-| FR17a | The system shall maintain a pre-paid balance for CLIENT accounts; placing an order deducts the dish price from the client's balance |
-| FR17b | The system shall reject an order if the client's balance is insufficient to cover the total price |
-| FR17c | EMPLOYEE accounts shall not have a balance and shall not be able to place orders |
-| FR18 | The system shall allow clients to view their own order history |
-| FR19 | The system shall allow employees to list all pending orders |
-| FR20 | The system shall allow employees to update an order's status (PENDING → PREPARING → READY → DELIVERED) |
-| FR21 | The system shall prevent clients from placing orders when the daily menu has no available dishes |
+| FR16 | The system shall allow clients to place a purchase for a future date from the available menu |
+| FR17 | The system shall assign a unique reference to each placed purchase |
+| FR17a | The system shall maintain a pre-paid balance for CLIENT accounts; placing a purchase deducts the dish price from the client's balance |
+| FR17b | The system shall reject a purchase if the client's balance is insufficient to cover the total price |
+| FR17c | EMPLOYEE accounts shall not have a balance and shall not be able to place purchases |
+| FR18 | The system shall allow clients to view their own purchase history |
+| FR19 | The system shall allow employees to list all pending purchases |
+| FR20 | The system shall allow employees to update a purchase's status (PENDING → PREPARING → READY → DELIVERED) |
+| FR21 | The system shall prevent clients from placing purchases when the daily menu has no available dishes |
 
 ### 1.5 Reporting & File Operations
 
@@ -117,7 +117,7 @@ User stories capture functional intent from each role's perspective. Each story 
 | FR22 | The system shall allow admins to generate a daily sales report exported to a file on the server filesystem |
 | FR23 | The system shall allow admins to retrieve previously generated reports by filename |
 | FR24 | The system shall create a dedicated output directory for reports on startup if it does not exist |
-| FR25 | The system shall log all order state transitions to an audit log file on the server filesystem |
+| FR25 | The system shall log all purchase state transitions to an audit log file on the server filesystem |
 
 ---
 
@@ -176,7 +176,7 @@ User stories capture functional intent from each role's perspective. Each story 
 | SDR01b | All security-sensitive random values (e.g., JWT JTI, temporary passwords, activation codes) must be generated using a cryptographically secure pseudo-random number generator (CSPRNG) | Prevents predictable token/code generation that enables forgery or brute force |
 | SDR02 | Enforce role-based access control (RBAC) at the service layer, not only at the route level | Defense in depth; prevents privilege escalation via indirect calls |
 | SDR03 | Reject expired, malformed, or unsigned tokens with HTTP 401 | Ensures only valid sessions access protected resources |
-| SDR03a | The system must maintain a token blocklist to invalidate JWTs on logout or account deactivation; all active tokens for a deactivated user must be rejected on the next request | Prevents reuse of valid tokens after logout or deactivation |
+| SDR03a | The system must invalidate JWTs on logout or account deactivation using a `tokenVersion` counter stored in the database; the JWT payload must include the version value issued at login; any request whose token version does not match the current value in the database must be rejected with HTTP 401 | Prevents reuse of valid tokens after logout or deactivation without requiring an external cache |
 | SDR03b | The maximum number of concurrent active sessions per user must be defined and enforced; additional logins beyond the limit must invalidate the oldest session | Prevents session proliferation and limits blast radius of stolen tokens |
 | SDR04 | Implement account lockout or rate limiting after N failed login attempts | Mitigates brute-force and credential stuffing attacks |
 | SDR05 | Passwords must have a minimum length of 12 characters and a maximum of at least 64 characters; context-specific words (e.g., the application name, username) must be blocked | Reduces risk of weak credential exploitation |
@@ -257,12 +257,12 @@ User stories capture functional intent from each role's perspective. Each story 
 | ID | Actor | Goal | Abuse Scenario |
 |----|-------|------|----------------|
 | AC01 | Unauthenticated attacker | Gain unauthorized access | Attacker performs brute-force login using a list of common passwords against registered email addresses |
-| AC02 | Authenticated client | Access another user's data | Client modifies the user ID in the request to retrieve another user's order history |
+| AC02 | Authenticated client | Access another user's data | Client modifies the user ID in the request to retrieve another user's purchase history |
 | AC03 | Authenticated client | Escalate privileges | Client manipulates the JWT payload to change their role from CLIENT to ADMIN |
-| AC04 | Authenticated employee | Place an order without paying | Employee directly calls the order creation endpoint, bypassing the client-facing flow |
+| AC04 | Authenticated employee | Place a purchase without paying | Employee directly calls the purchase creation endpoint, bypassing the client-facing flow |
 | AC05 | External attacker | Inject malicious data | Attacker submits a dish name containing SQL injection payload to corrupt the database |
 | AC06 | External attacker | Read server files | Attacker submits a report filename like `../../etc/passwd` to read arbitrary server files |
 | AC07 | Authenticated admin | Cover tracks after malicious action | Admin deletes a user account and then attempts to modify or delete the audit log file |
-| AC08 | External attacker | Deny service | Attacker floods the order creation endpoint with requests to exhaust server resources |
+| AC08 | External attacker | Deny service | Attacker floods the purchase creation endpoint with requests to exhaust server resources |
 | AC09 | External attacker | Intercept credentials | Attacker performs a MITM attack on an HTTP (non-TLS) connection to capture login credentials |
 | AC10 | Malicious insider | Exfiltrate data | Employee queries the full user list endpoint to extract customer PII for external use |

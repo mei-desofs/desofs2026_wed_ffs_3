@@ -44,10 +44,10 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC08 | T11 | SDR04 | Script 500 POST requests to `/auth/register` with random emails | DAST | Rate limit triggered; no more than N accounts created per IP per minute |
 | TC09 | T12 | SDR02 | Authenticate as CLIENT and call `DELETE /users/{id}` | Manual | HTTP 403 returned; action not performed |
 | TC10 | T18 | SDR02 | Authenticate as CLIENT and call `POST /dishes` | Manual | HTTP 403 returned; dish not created |
-| TC11 | T20 | SDR06 | Place an order with a manipulated `unitPrice` field in the request body | Manual | Order created using server-side price; client-supplied price ignored |
-| TC12 | T22 | SDR02, SDR06 | Authenticate as CLIENT A and call `GET /orders/{id}` where the order belongs to CLIENT B | Manual | HTTP 403 returned; order details not disclosed |
-| TC13 | T23 | SDR04 | Script 300 order creation requests per minute from a single account | DAST | Rate limit triggered; HTTP 429 returned |
-| TC14 | T24 | SDR02 | Authenticate as CLIENT and call `PATCH /orders/{id}/status` | Manual | HTTP 403 returned; status not changed |
+| TC11 | T20 | SDR06 | Place a purchase with a manipulated `unitPrice` field in the request body | Manual | Purchase created using server-side price; client-supplied price ignored |
+| TC12 | T22 | SDR02, SDR06 | Authenticate as CLIENT A and call `GET /api/purchases/{externalId}` where the purchase belongs to CLIENT B | Manual | HTTP 403 returned; purchase details not disclosed |
+| TC13 | T23 | SDR04 | Script 300 `POST /api/purchases` requests per minute from a single account | DAST | Rate limit triggered; HTTP 429 returned |
+| TC14 | T24 | SDR02 | Authenticate as CLIENT and call `PUT /api/purchases/{id}` attempting to update the purchase status | Manual | HTTP 403 returned; status not changed |
 | TC15 | T28 | SDR13 | Call `GET /reports?file=../../etc/passwd` | Manual | HTTP 400 returned; file not read; path traversal blocked |
 | TC16 | T29 | SDR14 | Trigger 50 large report generation requests in succession | Manual | Rate limit or quota enforced; disk usage bounded |
 | TC17 | T30 | SDR08 | Submit SQL injection payloads in dish name, order quantity, and search fields | DAST / SAST | Inputs sanitized; no SQL error leaked; queries unaffected |
@@ -61,8 +61,8 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC25 | — | SDR11 | Inspect HTTP response headers on all endpoints | Manual | `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` present |
 | TC26 | T07 | SDR01, SDR03 | Log in as ADMIN, call `POST /auth/logout`, then reuse the same JWT on a privileged endpoint | Manual | HTTP 401 returned; revoked token rejected by blocklist |
 | TC27 | T17 | SDR04 | Send 500 `GET /menu` requests per minute from a single IP | DAST | Rate limit triggered; HTTP 429 returned; service remains available for other IPs |
-| TC28 | T19 | SDR01, SDR06 | Place an order with an explicit `clientId` field in the request body referencing another user's ID | Manual | Field ignored; order linked to the authenticated JWT `sub`; no cross-user assignment |
-| TC29 | T21 | SDR19, SDR20 | Place an order and inspect the API response and the audit log | Manual | Response contains a unique `requestId`; audit log contains matching entry with `sub`, IP, and timestamp |
+| TC28 | T19 | SDR01, SDR06 | Call `POST /api/purchases` with an explicit `clientId` field in the request body referencing another user's ID | Manual | Field ignored; purchase linked to the authenticated JWT `sub`; no cross-user assignment |
+| TC29 | T21 | SDR19, SDR20 | Place a purchase and inspect the API response and the audit log | Manual | Response contains a unique `requestId`; audit log contains matching entry with `sub`, IP, and timestamp |
 | TC30 | T25, T27 | SDR01, SDR20 | Call `POST /reports/generate` as ADMIN and inspect the audit log | Manual | Audit log contains entry with actor `sub`, IP, timestamp, date range, and output filename |
 | TC31 | T40 | SDR19, SDR20 | Perform a role-change action as ADMIN and inspect the audit log for non-repudiation fields | Manual | Audit log entry contains actor `sub`, target user ID, old role, new role, and timestamp; `requestId` matches API response |
 | TC32 | T03 | SDR19 | Perform login (success), failed login, and logout; inspect the audit log for each event | Manual | Each event is logged with timestamp, IP, user ID, and outcome |
@@ -71,8 +71,8 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC35 | T32 | SDR18 | Review database connection pool configuration; verify max pool size and application behavior when pool is exhausted | Manual / Config Review | Pool limit is configured; application responds gracefully (503 or queue) rather than crashing or leaking credentials |
 | TC36 | T35 | SDR14 | Verify that the reports directory has a disk quota and that a retention/cleanup policy is in place for old reports | Manual / Config Review | Quota is enforced; old reports are cleaned up automatically; disk exhaustion is prevented |
 | TC37 | — | SDR13, SDR14 | Generate a report where a dish name contains a formula injection payload (e.g. `=SYSTEM("cmd")`, `=SUM(1+1)`); open the resulting CSV in a spreadsheet application | Manual | Payload is escaped (e.g. prefixed with `'`); no formula is executed when the file is opened |
-| TC38 | — | SDR02 | As EMPLOYEE, attempt to transition an order directly from `PENDING` to `DELIVERED`, skipping intermediate states | Manual | HTTP 400 returned; only valid sequential transitions (PENDING → PREPARING → READY → DELIVERED) are accepted |
-| TC39 | — | SDR06 | Attempt to place an order as a CLIENT whose balance is insufficient to cover the dish price; verify the database state after the rejected request | Manual | HTTP 400 returned; no order record created; client balance unchanged (atomic rollback) |
+| TC38 | — | SDR02 | As EMPLOYEE, attempt to transition a purchase directly from `PENDING` to `DELIVERED`, skipping intermediate states | Manual | HTTP 400 returned; only valid sequential transitions (PENDING → PREPARING → READY → DELIVERED) are accepted |
+| TC39 | — | SDR06 | Attempt to place a purchase as a CLIENT whose balance is insufficient to cover the dish price; verify the database state after the rejected request | Manual | HTTP 400 returned; no purchase record created; client balance unchanged (atomic rollback) |
 
 ---
 

@@ -270,7 +270,7 @@ Client                        API
 | Decision | Rationale |
 |----------|-----------|
 | JWT with RS256 (asymmetric) | Private key signs tokens; public key verifies — compromise of the API does not expose signing capability |
-| Stateless authentication | No server-side session storage; scales horizontally without shared session state |
+| JWT token revocation via version counter | Each user record stores a `tokenVersion` integer; the JWT payload includes this value. On logout or account deactivation, the server increments `tokenVersion` in PostgreSQL. All subsequent requests with the old version are rejected — no external cache required |
 | Role enforcement at service layer | Authorization checks in the domain/application layer, not only at the HTTP route level (defense in depth) |
 | Parameterized queries via ORM | Eliminates SQL injection at the persistence layer |
 | Append-only audit log | Logs written by the application cannot be modified; tampering requires OS-level access |

@@ -40,7 +40,7 @@
 
 | ID | STRIDE | Threat Description | Abuse Case |
 |----|--------|--------------------|------------|
-| T07 | S | An attacker impersonates an admin to perform user management operations | An attacker replays a captured admin JWT (still valid) to call `PATCH /users/{id}/role` and elevate a controlled account to ADMIN |
+| T07 | E | An attacker gains admin-level privileges by replaying a captured JWT to perform user management operations | An attacker replays a captured admin JWT (still valid) to call `PATCH /users/{id}/role` and elevate a controlled account to ADMIN |
 | T08 | T | An attacker exploits a mass assignment vulnerability to modify protected user fields (e.g. role, active) | A client sends a registration request with an extra `role: ADMIN` field in the JSON body, and the API binds it directly to the User entity |
 | T09 | R | An admin changes a user's role or deactivates an account with no audit trail, then denies the action | An admin demotes an employee account and later disputes having done so, with no log entry to prove otherwise |
 | T10 | I | The user listing endpoint returns sensitive fields such as password hashes or internal tokens | An employee calls `GET /users` and the response includes `passwordHash` fields, which they exfiltrate |
@@ -62,16 +62,16 @@
 
 ---
 
-### 1.4 P4 – Order Management (Process)
+### 1.4 P4 – Purchase Management (Process)
 
 | ID | STRIDE | Threat Description | Abuse Case |
 |----|--------|--------------------|------------|
 | T19 | S | An attacker places an order using another user's identity | An attacker obtains a valid client JWT and places an order under the victim's account, associating charges to them |
 | T20 | T | A client modifies the order payload (e.g. price, quantity) before submission | A client intercepts their own request and changes `unitPrice` to 0.01 before it reaches the order management process |
 | T21 | R | A client denies having placed an order after consuming the item | A client disputes an order charge claiming it was never placed, and without signed order records, the claim cannot be refuted |
-| T22 | I | A client accesses another client's order history via an Insecure Direct Object Reference | A client calls `GET /orders/456` where `456` belongs to another user, and the API returns the order without checking ownership |
-| T23 | D | An attacker floods the order creation endpoint to exhaust server or database resources | An attacker scripts rapid POST requests to `/orders`, filling the orders table and degrading the system for all users |
-| T24 | E | A CLIENT-role user calls the order status update endpoint reserved for EMPLOYEEs | A client sends `PATCH /orders/456/status` with `status: DELIVERED`, bypassing the fulfillment workflow |
+| T22 | I | A client accesses another client's purchase history via an Insecure Direct Object Reference | A client calls `GET /api/purchases/{externalId}` where the external ID belongs to another user, and the API returns the purchase without checking ownership |
+| T23 | D | An attacker floods the purchase creation endpoint to exhaust server or database resources | An attacker scripts rapid POST requests to `/api/purchases`, filling the purchases table and degrading the system for all users |
+| T24 | E | A CLIENT-role user calls the purchase status update endpoint reserved for EMPLOYEEs | A client sends `PUT /api/purchases/{id}` with an updated status `DELIVERED`, bypassing the fulfillment workflow |
 
 ---
 
@@ -91,7 +91,7 @@
 
 | ID | STRIDE | Threat Description | Abuse Case |
 |----|--------|--------------------|------------|
-| T30 | T | An attacker exploits SQL injection to modify records in the database | An attacker submits `'; DROP TABLE orders; --` in a dish name field that is concatenated directly into a SQL query |
+| T30 | T | An attacker exploits SQL injection to modify records in the database | An attacker submits `'; DROP TABLE purchases; --` in a dish name field that is concatenated directly into a SQL query |
 | T31 | I | An attacker obtains database credentials and dumps all tables | Database credentials hardcoded in a config file are discovered in a public repository, allowing the attacker to connect directly to PostgreSQL and extract all user and order data |
 | T32 | D | An attacker exhausts the database connection pool to deny service | An attacker opens thousands of connections to the database directly (if exposed) or through the API, preventing legitimate queries from executing |
 
@@ -152,7 +152,7 @@ E Low     │   Low    │   Low    │  Medium  │
 | T04 | User enumeration via error messages | High | Medium | 🟠 High |
 | T05 | Login endpoint DoS / brute force | High | High | 🔴 Critical |
 | T06 | JWT signing key exposure | Low | High | 🟡 Medium |
-| T07 | Admin JWT replay | Low | High | 🟡 Medium |
+| T07 | JWT replay – privilege escalation | Low | High | 🟡 Medium |
 | T08 | Mass assignment – role field | Medium | High | 🟠 High |
 | T09 | No audit trail for admin actions | High | Medium | 🟠 High |
 | T10 | Sensitive fields in user response | Medium | Medium | 🟡 Medium |
@@ -167,7 +167,7 @@ E Low     │   Low    │   Low    │  Medium  │
 | T19 | Order placed under another identity | Low | High | 🟡 Medium |
 | T20 | Order price tampering | Medium | High | 🟠 High |
 | T21 | Client repudiates order | Medium | Medium | 🟡 Medium |
-| T22 | IDOR – order history | High | Medium | 🟠 High |
+| T22 | IDOR – purchase history | High | Medium | 🟠 High |
 | T23 | Order creation flooding | High | Medium | 🟠 High |
 | T24 | CLIENT updates order status | Medium | Medium | 🟡 Medium |
 | T25 | Report generation with stolen admin JWT | Low | High | 🟡 Medium |
@@ -212,8 +212,8 @@ E Low     │   Low    │   Low    │  Medium  │
 | T15 | 🟠 High | Record all dish and ingredient modifications with the actor's ID, timestamp, and before/after values in the audit log | SDR20 |
 | T18 | 🟠 High | Validate user role against required permission on every service method; CLIENT role must not access EMPLOYEE or ADMIN endpoints | SDR02 |
 | T20 | 🟠 High | Calculate and fix order prices server-side from the current menu at the time of order placement; never trust client-supplied price values | SDR06 |
-| T22 | 🟠 High | On every order retrieval, verify that the authenticated user's ID matches the order's `clientId`; employees and admins may bypass this check via explicit role validation | SDR02, SDR06 |
-| T23 | 🟠 High | Rate-limit order creation per authenticated user; set a maximum number of active orders per account | SDR04 |
+| T22 | 🟠 High | On every purchase retrieval, verify that the authenticated user's ID matches the purchase's `clientId`; employees and admins may bypass this check via explicit role validation | SDR02, SDR06 |
+| T23 | 🟠 High | Rate-limit purchase creation per authenticated user; set a maximum number of active purchases per account | SDR04 |
 | T27 | 🟠 High | Log all report generation events (who, when, date range) to the audit log | SDR20 |
 | T28 | 🟠 High | Validate report filename parameters against a strict allowlist pattern (e.g. `^[a-zA-Z0-9_\-]+\.csv$`); resolve the final path and verify it is within the allowed reports directory | SDR13 |
 | T29 | 🟠 High | Set a maximum disk quota for the reports directory; implement retention policy to delete reports older than N days; enforce request-level rate limiting on report generation | SDR14 |
@@ -227,7 +227,7 @@ E Low     │   Low    │   Low    │  Medium  │
 | ID | Risk | Mitigation | Status | Links to SDR |
 |----|------|------------|--------|--------------|
 | T06 | 🟡 Medium | Store the JWT RS256 private key in a secrets manager (e.g., HashiCorp Vault, Docker Secret) or a hardware-backed keystore; never commit keys to version control; rotate on any suspected exposure; scan CI artefacts for accidental key leakage | ⬜ To Do | SDR18 |
-| T07 | 🟡 Medium | Maintain a short-lived token blocklist (Redis) that records revoked JWT `jti` values; invalidate admin tokens immediately on logout; validate both `exp` and the blocklist on every request to a privileged endpoint | ⬜ To Do | SDR01, SDR03 |
+| T07 | 🟡 Medium | Store a `tokenVersion` counter per user in PostgreSQL; embed the version in the JWT payload at login; on logout or account deactivation, increment the counter; reject any token whose version does not match the current database value with HTTP 401 | ⬜ To Do | SDR01, SDR03a |
 | T10 | 🟡 Medium | Use explicit response DTOs that whitelist only safe fields (`id`, `email`, `name`, `role`, `createdAt`); never serialize `passwordHash`, internal tokens, or audit metadata in any API response | ✅ Planned in design | SDR09 |
 | T17 | 🟡 Medium | Apply IP-based rate limiting on `GET /menu`; cache the current daily menu response with a short TTL (≤ 60 s) to absorb read bursts; configure max-connection limits at the reverse proxy | ⬜ To Do | SDR04 |
 | T19 | 🟡 Medium | Always derive `clientId` from the authenticated JWT `sub` claim; never accept `clientId` as a request body or query parameter; verify JWT `sub` matches the order owner on every order read and write operation | ✅ Planned in design | SDR01, SDR06 |
