@@ -16,6 +16,52 @@ Coffeetaria is a cafeteria management backend system that allows clients to brow
 
 ---
 
+## User Stories
+
+User stories capture functional intent from each role's perspective. Each story includes a security constraint to ensure that security requirements are embedded in the definition of done.
+
+### Authentication & Session Management
+
+| ID | Role | Story | Security Constraint |
+|----|------|-------|---------------------|
+| US01 | Visitor | As a visitor, I want to register with a username and password so that I can access the system as a client | Password must meet complexity rules (≥ 12 chars); duplicate usernames are rejected |
+| US02 | User | As a registered user, I want to log in with my credentials so that I receive a JWT token to access protected resources | Failed attempts are counted; account is locked after repeated failures |
+| US03 | User | As an authenticated user, I want to log out so that my session token is invalidated and cannot be reused | Token is added to a blocklist on logout; subsequent requests with that token return HTTP 401 |
+| US04 | Admin | As an admin, I want to deactivate a user account so that a departing employee or abusive client loses access immediately | Deactivation takes effect on the next request; existing tokens for that user are rejected |
+
+### User Management
+
+| ID | Role | Story | Security Constraint |
+|----|------|-------|---------------------|
+| US05 | Admin | As an admin, I want to list all registered users so that I can monitor system access | Response must never include password hashes, raw tokens, or other sensitive internal fields |
+| US06 | Admin | As an admin, I want to assign or change a user's role so that permissions reflect current responsibilities | Role changes are logged in the audit trail with actor identity, target user, old role, and new role |
+| US07 | User | As an authenticated user, I want to view and update my own profile so that my contact information stays current | Users can only access their own profile; attempting to access another user's profile returns HTTP 403 |
+
+### Menu & Dish Management
+
+| ID | Role | Story | Security Constraint |
+|----|------|-------|---------------------|
+| US08 | Admin / Employee | As an admin or employee, I want to create and manage dishes with ingredients so that the daily menu reflects the current offering | Only ADMIN and EMPLOYEE roles can create or modify dishes; CLIENT role is read-only |
+| US09 | Admin / Employee | As an admin or employee, I want to publish a daily menu selecting available dishes so that clients can browse and order | Menu publication is restricted to ADMIN and EMPLOYEE; employees may only publish menus for future dates |
+| US10 | Client | As a client, I want to view the current menu including allergen information so that I can make an informed choice | Allergen data is displayed for all authenticated users; no role restriction needed |
+
+### Order Management
+
+| ID | Role | Story | Security Constraint |
+|----|------|-------|---------------------|
+| US11 | Client | As a client, I want to place an order from the available menu so that my meal is reserved for collection | Order is linked to the authenticated user's JWT `sub`; client-supplied user IDs in the request body are ignored |
+| US12 | Client | As a client, I want to view my own order history so that I can track past purchases | Clients can only retrieve their own orders; IDOR attempts return HTTP 403 |
+| US13 | Employee | As an employee, I want to list all pending orders and update their status so that I can manage fulfillment efficiently | Only EMPLOYEE and ADMIN roles can change order status; status transitions follow the defined lifecycle |
+
+### Reporting & File Operations
+
+| ID | Role | Story | Security Constraint |
+|----|------|-------|---------------------|
+| US14 | Admin | As an admin, I want to generate a daily sales report exported to a file so that I can review revenue and order volume | Filename is validated against an allowlist pattern (`^[a-zA-Z0-9_\-]+\.csv$`); path traversal is blocked |
+| US15 | Admin | As an admin, I want to retrieve a previously generated report by filename so that I can share or archive financial data | Only files within the dedicated reports directory can be served; canonical path resolution is enforced |
+
+---
+
 ## 1. Functional Requirements
 
 ### 1.1 Authentication & Session Management

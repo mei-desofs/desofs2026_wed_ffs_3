@@ -279,3 +279,126 @@ Client                        API
 | Environment-based secrets | Database credentials and JWT keys loaded from environment variables; never hardcoded |
 | HTTPS enforced at entry point | All plaintext HTTP connections rejected or redirected at the reverse proxy level |
 | Minimal OS permissions | Application process runs as a non-root user with access only to its working directory |
+
+---
+
+## 8. Secure Coding Guidelines
+
+These guidelines are mandatory for all contributors. They translate the secure design decisions and SDRs into day-to-day coding rules.
+
+### 8.1 Input Validation
+
+| Rule | Implementation |
+|------|---------------|
+| Validate all incoming request bodies | Annotate DTOs with `@Valid`; use `@NotNull`, `@Size`, `@Pattern` constraints; reject requests that fail validation with HTTP 400 |
+| Use strict allowlists for string fields | Email, username, dish name, and filename fields must match defined regex patterns; reject anything outside the allowlist |
+| Never trust client-supplied IDs for ownership | Always resolve the resource owner from the JWT `sub` claim, not from a field in the request body |
+| Validate numeric ranges explicitly | Order quantities, prices, and date ranges must be within business-defined bounds; reject negative or zero values where meaningless |
+
+### 8.2 Authentication & Authorization
+
+| Rule | Implementation |
+|------|---------------|
+| Enforce roles at the service layer | Use `@PreAuthorize` or explicit role checks in service methods — never rely solely on route-level filters |
+| Extract user identity from the JWT only | Never read `userId` or `role` from the request body or query parameters; always use `SecurityContextHolder` |
+| Reject tokens without a valid signature | Configure Spring Security to refuse `alg: none` and non-RS256 algorithms explicitly |
+| Log all authorization failures | Every HTTP 401 and HTTP 403 response must produce a structured log entry with IP, endpoint, and JWT `sub` (if available) |
+
+### 8.3 Data Handling & Output
+
+| Rule | Implementation |
+|------|---------------|
+| Never return domain entities directly | All responses must go through response DTOs; entities must never be serialized into API responses |
+| Exclude sensitive fields from all DTOs | `passwordHash`, internal tokens, and balance fields must not appear in any response DTO |
+| Use generic error messages externally | Return `"Invalid credentials"` or `"Access denied"` — never `"User not found"` or stack traces |
+| Apply `Cache-Control: no-store` on sensitive endpoints | Authentication, user profile, and order endpoints must not be cached by intermediaries |
+
+### 8.4 File System Operations
+
+| Rule | Implementation |
+|------|---------------|
+| Never concatenate user input into file paths | Always use `Paths.get(BASE_DIR).resolve(filename).normalize()` and verify the result still starts with `BASE_DIR` |
+| Validate filenames against an allowlist | Reject any filename that does not match `^[a-zA-Z0-9_\-]+\.csv$` before resolving the path |
+| Set file permissions to 600 on creation | Use `Files.setPosixFilePermissions` (or equivalent) immediately after writing report files |
+| Never pass user input to OS commands | Shell commands and process builders must use hardcoded arguments; no user-supplied data reaches the command line |
+
+### 8.5 Logging & Secrets
+
+| Rule | Implementation |
+|------|---------------|
+| Never log sensitive fields | Passwords, JWT tokens, and PII (email, full name) must be explicitly excluded from log statements; use `@JsonIgnore` or manual filtering |
+| Use structured logging | Every log entry must include: `timestamp`, `level`, `userId` (JWT `sub`), `action`, `resource`, `ip`; use a logging framework with MDC |
+| Load all secrets from environment variables | JWT private key, database URL, and credentials must come from `System.getenv()`; hardcoded values in any config file are forbidden |
+| Use a pre-commit hook to scan for secrets | Configure `gitleaks` or `truffleHog` to block commits containing patterns matching private keys, passwords, or API tokens |
+
+### 8.6 Dependency Management
+
+| Rule | Implementation |
+|------|---------------|
+| Pin all dependency versions in `pom.xml` | Do not use version ranges (`[1.0,2.0)`); specify exact versions for all direct dependencies |
+| Run SCA on every build | OWASP Dependency-Check must be integrated in the Maven build; builds with HIGH or CRITICAL CVEs must fail |
+| Review before adding a new dependency | Check the library's last release date, open CVEs, and download count before inclusion; prefer Spring ecosystem libraries |
+
+---
+
+## 9. Dependency Analysis
+
+The following table lists the project dependencies declared in `pom.xml`, the rationale for their selection, and their security posture as of Phase 1.
+
+### 9.1 Core Framework
+
+| Dependency | Version | Purpose | Security Notes |
+|------------|---------|---------|----------------|
+| `spring-boot-starter-parent` | **3.1.5** | Parent BOM; manages all Spring dependency versions | Actively maintained; pins transitive dependency versions to a tested, compatible set; reduces supply-chain risk |
+| `spring-boot-starter-web` | 3.1.5 (via parent) | REST API framework, embedded Tomcat | Ships with Tomcat 10.1.x; configures HTTPS redirect and rejects HTTP by default when a keystore is provided |
+| `spring-boot-starter-data-jpa` | 3.1.5 (via parent) | ORM persistence via Hibernate 6 | Uses parameterized queries by default (SDR08); prevents SQL injection at the persistence layer |
+| `spring-boot-starter-validation` | 3.1.5 (via parent) | Bean Validation (JSR-380) via Hibernate Validator | Enforces `@Valid` constraints on DTOs; rejects malformed input at the API boundary (SDR06) |
+| `spring-boot-starter-security` | 3.1.5 (via parent) | Authentication, authorization, security filters | Provides JWT filter integration, BCrypt support, and method-level `@PreAuthorize` (SDR01, SDR02) |
+| `spring-boot-starter-actuator` | 3.1.5 (via parent) | Health and metrics endpoints | Endpoints are secured by default; exposes only `/health` publicly; useful for monitoring (NFR13) |
+
+### 9.2 Authentication
+
+| Dependency | Version | Purpose | Security Notes |
+|------------|---------|---------|----------------|
+| `jjwt-api` / `jjwt-impl` / `jjwt-jackson` | **0.11.5** | JWT creation and validation | Pinned to 0.11.5; supports HMAC-SHA and RSA signing algorithms; rejects `alg: none` tokens by default (SDR01, SDR03) |
+| `spring-security-crypto` (transitive) | 6.1.x (via parent) | BCrypt password hashing | Included via Spring Security; cost factor configured to ≥ 12 at application level (SDR02, NFR02) |
+
+### 9.3 Database
+
+| Dependency | Version | Purpose | Security Notes |
+|------------|---------|---------|----------------|
+| `h2` | managed by parent (runtime) | In-memory database for development and testing | Scope `runtime`; not exposed in production builds; replaced by PostgreSQL in production deployment (SDR18) |
+| PostgreSQL JDBC driver | planned for Sprint 1 | Production database connectivity | To be added in Phase 2; credentials will be loaded from environment variables (SDR18) |
+
+### 9.4 Utilities & API Documentation
+
+| Dependency | Version | Purpose | Security Notes |
+|------------|---------|---------|----------------|
+| `modelmapper` | **3.1.1** | DTO ↔ entity mapping | Used only for non-sensitive field projection; response DTOs exclude all sensitive fields (SDR09) |
+| `springdoc-openapi-starter-webmvc-ui` | **2.3.0** | OpenAPI / Swagger UI | Documentation endpoint; must be disabled or access-controlled in production to avoid API enumeration |
+
+### 9.5 Testing
+
+| Dependency | Version | Purpose | Security Notes |
+|------------|---------|---------|----------------|
+| `spring-boot-starter-test` | 3.1.5 (via parent) | Unit and integration testing (JUnit 5, Mockito, Spring Test) | Includes Spring Security Test for role-based test scenarios |
+| `junit-jupiter` | **5.10.0** | JUnit 5 test engine | Pinned explicitly to ensure compatibility with ArchUnit and PITest |
+| `archunit-junit5` | **1.4.1** | Architecture fitness tests | Enforces layered architecture constraints; ensures no infrastructure code leaks into the domain layer (NFR10, NFR11) |
+
+### 9.6 Build & Quality Plugins
+
+| Plugin | Version | Purpose | Security Notes |
+|--------|---------|---------|----------------|
+| `spring-boot-maven-plugin` | 3.1.5 (via parent) | Executable JAR packaging | Produces a self-contained artifact; no external servlet container required |
+| `jacoco-maven-plugin` | **0.8.14** | Code coverage measurement | Coverage reports generated on `mvn verify`; baseline for identifying untested security-critical paths |
+| `pitest-maven` | **1.15.0** | Mutation testing | Validates test quality by injecting code mutations; scoped to Purchase aggregate for Phase 1 |
+| OWASP `dependency-check-maven` | planned for Sprint 1 | Software Composition Analysis (SCA) | To be integrated in Phase 2 CI pipeline; will block builds on HIGH/CRITICAL CVEs (SDR23) |
+| `spotbugs-maven-plugin` | planned for Sprint 1 | Static Application Security Testing (SAST) | To be integrated in Phase 2 CI pipeline; detects injection flaws and insecure patterns (SDR23) |
+
+### 9.7 Dependency Security Policy
+
+- All direct dependency versions are pinned to exact versions in `pom.xml`; Spring Boot parent BOM manages transitive versions.
+- H2 is scoped to `runtime` and is not included in production builds.
+- The Springdoc Swagger UI endpoint (`/swagger-ui.html`) must be disabled or protected before production deployment.
+- OWASP Dependency-Check and SpotBugs will be integrated in Phase 2 Sprint 1 as part of the CI security pipeline (SDR23, TC23).
+- Any dependency introducing a HIGH or CRITICAL CVE must be patched or have an accepted exception documented before merging.
