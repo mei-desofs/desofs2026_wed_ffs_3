@@ -70,6 +70,9 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC34 | T15 | SDR20 | As EMPLOYEE, update a dish; inspect the audit log for the change record | Manual | Audit log entry records actor `sub`, dish ID, field changed, old/new values, and timestamp |
 | TC35 | T32 | SDR18 | Review database connection pool configuration; verify max pool size and application behavior when pool is exhausted | Manual / Config Review | Pool limit is configured; application responds gracefully (503 or queue) rather than crashing or leaking credentials |
 | TC36 | T35 | SDR14 | Verify that the reports directory has a disk quota and that a retention/cleanup policy is in place for old reports | Manual / Config Review | Quota is enforced; old reports are cleaned up automatically; disk exhaustion is prevented |
+| TC37 | — | SDR13, SDR14 | Generate a report where a dish name contains a formula injection payload (e.g. `=SYSTEM("cmd")`, `=SUM(1+1)`); open the resulting CSV in a spreadsheet application | Manual | Payload is escaped (e.g. prefixed with `'`); no formula is executed when the file is opened |
+| TC38 | — | SDR02 | As EMPLOYEE, attempt to transition an order directly from `PENDING` to `DELIVERED`, skipping intermediate states | Manual | HTTP 400 returned; only valid sequential transitions (PENDING → PREPARING → READY → DELIVERED) are accepted |
+| TC39 | — | SDR06 | Attempt to place an order as a CLIENT whose balance is insufficient to cover the dish price; verify the database state after the rejected request | Manual | HTTP 400 returned; no order record created; client balance unchanged (atomic rollback) |
 
 ---
 
@@ -246,3 +249,6 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | T27 | High | TC30 | SDR01, SDR20 | V16.3.3 |
 | T32 | High | TC35 | SDR18 | V13.1.2 |
 | T35 | High | TC36 | SDR14 | V15.2.2 |
+| — | — | TC37 | SDR13, SDR14 | V1.2.10 |
+| — | — | TC38 | SDR02 | V2.3.1 |
+| — | — | TC39 | SDR06 | V2.3.3 |
