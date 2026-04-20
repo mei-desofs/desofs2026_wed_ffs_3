@@ -59,6 +59,12 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC23 | — | SDR22, SDR23 | Run OWASP Dependency-Check on the project dependencies | SCA | No HIGH or CRITICAL CVEs in dependency tree |
 | TC24 | — | SDR06 | Verify input validation on all POST/PUT endpoints with invalid types, empty fields, and oversized inputs | DAST / Unit | HTTP 400 returned with validation error; no 500 errors |
 | TC25 | — | SDR11 | Inspect HTTP response headers on all endpoints | Manual | `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` present |
+| TC26 | T07 | SDR01, SDR03 | Log in as ADMIN, call `POST /auth/logout`, then reuse the same JWT on a privileged endpoint | Manual | HTTP 401 returned; revoked token rejected by blocklist |
+| TC27 | T17 | SDR04 | Send 500 `GET /menu` requests per minute from a single IP | DAST | Rate limit triggered; HTTP 429 returned; service remains available for other IPs |
+| TC28 | T19 | SDR01, SDR06 | Place an order with an explicit `clientId` field in the request body referencing another user's ID | Manual | Field ignored; order linked to the authenticated JWT `sub`; no cross-user assignment |
+| TC29 | T21 | SDR19, SDR20 | Place an order and inspect the API response and the audit log | Manual | Response contains a unique `requestId`; audit log contains matching entry with `sub`, IP, and timestamp |
+| TC30 | T25 | SDR01, SDR20 | Call `POST /reports/generate` as ADMIN and inspect the audit log | Manual | Audit log contains entry with actor `sub`, IP, timestamp, date range, and output filename |
+| TC31 | T40 | SDR19, SDR20 | Perform a role-change action as ADMIN and inspect the audit log for non-repudiation fields | Manual | Audit log entry contains actor `sub`, target user ID, old role, new role, and timestamp; `requestId` matches API response |
 
 ---
 
@@ -208,3 +214,9 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | T34 | Medium | TC20 | SDR14 | V12.5.1 |
 | T37 | High | TC21 | SDR10, SDR11 | V9.1.1 |
 | T39 | High | TC22 | SDR01, SDR10 | V3.3.2 |
+| T07 | Medium | TC26 | SDR01, SDR03 | V3.3.1 |
+| T17 | Medium | TC27 | SDR04 | V2.2.1 |
+| T19 | Medium | TC28 | SDR01, SDR06 | V4.1.2 |
+| T21 | Medium | TC29 | SDR19, SDR20 | V7.2.1 |
+| T25 | Medium | TC30 | SDR01, SDR20 | V7.2.1 |
+| T40 | Medium | TC31 | SDR19, SDR20 | V7.2.1, V7.2.2 |

@@ -221,3 +221,23 @@ E Low     │   Low    │   Low    │  Medium  │
 | T35 | 🟠 High | Implement disk usage monitoring and alerts; enforce a maximum file size per report; auto-delete reports older than 30 days | SDR14 |
 | T37 | 🟠 High | Enforce HTTPS-only at the reverse proxy; reject or redirect all HTTP traffic; set `Strict-Transport-Security` header | SDR10, SDR11 |
 | T39 | 🟠 High | Set JWT `exp` to 1 hour; use short-lived access tokens; transmit tokens only over HTTPS; set `Secure` and `HttpOnly` flags if using cookies | SDR01, SDR10 |
+
+### Medium Threats
+
+| ID | Risk | Mitigation | Status | Links to SDR |
+|----|------|------------|--------|--------------|
+| T06 | 🟡 Medium | Store the JWT RS256 private key in a secrets manager (e.g., HashiCorp Vault, Docker Secret) or a hardware-backed keystore; never commit keys to version control; rotate on any suspected exposure; scan CI artefacts for accidental key leakage | ⬜ To Do | SDR18 |
+| T07 | 🟡 Medium | Maintain a short-lived token blocklist (Redis) that records revoked JWT `jti` values; invalidate admin tokens immediately on logout; validate both `exp` and the blocklist on every request to a privileged endpoint | ⬜ To Do | SDR01, SDR03 |
+| T10 | 🟡 Medium | Use explicit response DTOs that whitelist only safe fields (`id`, `email`, `name`, `role`, `createdAt`); never serialize `passwordHash`, internal tokens, or audit metadata in any API response | ✅ Planned in design | SDR09 |
+| T17 | 🟡 Medium | Apply IP-based rate limiting on `GET /menu`; cache the current daily menu response with a short TTL (≤ 60 s) to absorb read bursts; configure max-connection limits at the reverse proxy | ⬜ To Do | SDR04 |
+| T19 | 🟡 Medium | Always derive `clientId` from the authenticated JWT `sub` claim; never accept `clientId` as a request body or query parameter; verify JWT `sub` matches the order owner on every order read and write operation | ✅ Planned in design | SDR01, SDR06 |
+| T21 | 🟡 Medium | Log every order placement and status transition with the JWT `sub`, IP address, and timestamp; return a unique server-generated `requestId` in every order response that correlates to the audit log entry | ⬜ To Do | SDR19, SDR20 |
+| T24 | 🟡 Medium | Enforce `EMPLOYEE` or `ADMIN` role check at the service layer on every order status transition; return HTTP 403 for any role below `EMPLOYEE`; unit-test this check independently of the HTTP route configuration | ✅ Planned in design | SDR02 |
+| T25 | 🟡 Medium | Set JWT expiry to 1 hour for all roles including `ADMIN`; log every report generation event (actor `sub`, IP, timestamp, requested date range) to the audit log; alert on report generation outside business hours | ⬜ To Do | SDR01, SDR20 |
+| T30 | 🟡 Medium | Use Spring Data JPA / Hibernate with parameterized JPQL or native queries exclusively; prohibit string concatenation into any SQL or JPQL expression; include SAST rules (SpotBugs, SonarQube) in CI to detect injection-prone patterns | ✅ Planned in design | SDR08 |
+| T31 | 🟡 Medium | Store database credentials exclusively in environment variables or a secrets manager; add `.env` and `application-prod.properties` to `.gitignore`; integrate a secret-scanning tool (e.g., gitleaks, truffleHog) as a pre-commit hook and CI gate | ⬜ To Do | SDR18 |
+| T33 | 🟡 Medium | Configure the audit log file as append-only at the OS level (`chattr +a` on Linux); run the application as a dedicated non-root user without write permission to existing log content; forward logs to an external SIEM in production to separate storage from the application host | ⬜ To Do | SDR21 |
+| T34 | 🟡 Medium | Set report file permissions to `600` (owner read/write only) programmatically after each write; restrict the reports directory with OS ACLs accessible only to the application service account; validate permissions on application startup | ⬜ To Do | SDR14 |
+| T36 | 🟡 Medium | Enforce TLS 1.2+ at the reverse proxy for all inbound and outbound connections; enable HSTS with `max-age` ≥ 31 536 000 s; disable weak cipher suites (RC4, 3DES, export ciphers); enable OCSP stapling for certificate validity | ✅ Planned in design | SDR10, SDR11 |
+| T38 | 🟡 Medium | Deploy behind a reverse proxy or CDN with volumetric DDoS protection (e.g., Cloudflare, AWS Shield); configure connection-rate limits and request-queue depth at the ingress; implement application-level circuit breakers to shed load before the service crashes | ⬜ To Do | SDR04 |
+| T40 | 🟡 Medium | Bind every logged action to the authenticated user's JWT `sub` and a unique `requestId`; return the `requestId` in API responses so it can be referenced in disputes; require users to accept terms of service at registration, establishing acknowledgement of accountability | ⬜ To Do | SDR19, SDR20 |

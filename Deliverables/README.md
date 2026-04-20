@@ -40,6 +40,7 @@ Coffeetaria is a cafeteria management backend system (REST API + relational data
 - [x] System overview & domain model → [`design.md §1-2`](./design.md)
 - [x] Data Flow Diagram – Level 0 → [`design.md §3.1`](./design.md)
 - [x] Data Flow Diagram – Level 1 → [`design.md §3.2`](./design.md)
+- [x] Data Flow Diagram – Level 2 (P5 Reporting) → [`design.md §3.3`](./design.md)
 - [x] Secure architecture decisions → [`design.md §4`](./design.md)
 - [x] Threat modeling (STRIDE per DFD element) → [`threat_analysis.md §1`](./threat_analysis.md)
 - [x] Risk assessment → [`threat_analysis.md §2`](./threat_analysis.md)
