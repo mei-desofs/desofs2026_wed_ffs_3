@@ -121,7 +121,7 @@
 
 | ID | STRIDE | Threat Description | Abuse Case |
 |----|--------|--------------------|------------|
-| T39 | S | An attacker impersonates a legitimate user by stealing their session token | An attacker steals a JWT from a client's browser (XSS or network sniff) and uses it to place orders under the victim's identity |
+| T39 | S | An attacker impersonates a legitimate user by stealing their session token | An attacker steals a JWT from a client's browser (XSS or network sniffing) and uses it to place orders under the victim's identity |
 | T40 | R | A user denies having performed an action (order, role change, report) with no proof of identity binding | A client places and receives an order but disputes the charge, claiming someone else used their account, and there is no request signature or strong audit trail to prove otherwise |
 
 ---

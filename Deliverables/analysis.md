@@ -233,7 +233,7 @@ User stories capture functional intent from each role's perspective. Each story 
 | AC01 | Unauthenticated attacker | Gain unauthorized access | Attacker performs brute-force login using a list of common passwords against registered email addresses |
 | AC02 | Authenticated client | Access another user's data | Client modifies the user ID in the request to retrieve another user's order history |
 | AC03 | Authenticated client | Escalate privileges | Client manipulates the JWT payload to change their role from CLIENT to ADMIN |
-| AC04 | Authenticated employee | Place an order without paying | Employee directly calls the order creation endpoint bypassing the client-facing flow |
+| AC04 | Authenticated employee | Place an order without paying | Employee directly calls the order creation endpoint, bypassing the client-facing flow |
 | AC05 | External attacker | Inject malicious data | Attacker submits a dish name containing SQL injection payload to corrupt the database |
 | AC06 | External attacker | Read server files | Attacker submits a report filename like `../../etc/passwd` to read arbitrary server files |
 | AC07 | Authenticated admin | Cover tracks after malicious action | Admin deletes a user account and then attempts to modify or delete the audit log file |

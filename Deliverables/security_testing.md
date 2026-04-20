@@ -38,7 +38,7 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC02 | T02 | SDR01, SDR03 | Decode a valid JWT, modify the `role` field to `ADMIN`, re-encode and submit to an admin endpoint | Manual | HTTP 401 returned; tampered token rejected |
 | TC03 | T04 | SDR09 | Submit login requests with a valid email + wrong password, then with an unknown email | Manual | Both return identical error message and HTTP 401 |
 | TC04 | T05 | SDR04 | Send 200 login requests per second to `/auth/login` | DAST | HTTP 429 returned after threshold; service remains available for others |
-| TC05 | T06 | SDR01 | Attempt to forge a JWT signed with a different key or algorithm `none` | Manual | HTTP 401 returned; forged token rejected |
+| TC05 | T06 | SDR01 | Attempt to forge a JWT signed with a different key or using algorithm `none` | Manual | HTTP 401 returned; forged token rejected |
 | TC06 | T08 | SDR07 | Submit a registration request with extra `role: ADMIN` field in the JSON body | Manual | Field ignored; user created with default `CLIENT` role |
 | TC07 | T10 | SDR09 | Call `GET /users` as an EMPLOYEE and inspect the response body | Manual | Response contains no `passwordHash`, tokens, or other sensitive internal fields |
 | TC08 | T11 | SDR04 | Script 500 POST requests to `/auth/register` with random emails | DAST | Rate limit triggered; no more than N accounts created per IP per minute |
@@ -63,14 +63,19 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | TC27 | T17 | SDR04 | Send 500 `GET /menu` requests per minute from a single IP | DAST | Rate limit triggered; HTTP 429 returned; service remains available for other IPs |
 | TC28 | T19 | SDR01, SDR06 | Place an order with an explicit `clientId` field in the request body referencing another user's ID | Manual | Field ignored; order linked to the authenticated JWT `sub`; no cross-user assignment |
 | TC29 | T21 | SDR19, SDR20 | Place an order and inspect the API response and the audit log | Manual | Response contains a unique `requestId`; audit log contains matching entry with `sub`, IP, and timestamp |
-| TC30 | T25 | SDR01, SDR20 | Call `POST /reports/generate` as ADMIN and inspect the audit log | Manual | Audit log contains entry with actor `sub`, IP, timestamp, date range, and output filename |
+| TC30 | T25, T27 | SDR01, SDR20 | Call `POST /reports/generate` as ADMIN and inspect the audit log | Manual | Audit log contains entry with actor `sub`, IP, timestamp, date range, and output filename |
 | TC31 | T40 | SDR19, SDR20 | Perform a role-change action as ADMIN and inspect the audit log for non-repudiation fields | Manual | Audit log entry contains actor `sub`, target user ID, old role, new role, and timestamp; `requestId` matches API response |
+| TC32 | T03 | SDR19 | Perform login (success), failed login, and logout; inspect the audit log for each event | Manual | Each event is logged with timestamp, IP, user ID, and outcome |
+| TC33 | T09 | SDR20 | As ADMIN, perform a role change on a user account; inspect the audit log | Manual | Audit log entry contains actor `sub`, target user ID, old role, new role, and timestamp |
+| TC34 | T15 | SDR20 | As EMPLOYEE, update a dish; inspect the audit log for the change record | Manual | Audit log entry records actor `sub`, dish ID, field changed, old/new values, and timestamp |
+| TC35 | T32 | SDR18 | Review database connection pool configuration; verify max pool size and application behavior when pool is exhausted | Manual / Config Review | Pool limit is configured; application responds gracefully (503 or queue) rather than crashing or leaking credentials |
+| TC36 | T35 | SDR14 | Verify that the reports directory has a disk quota and that a retention/cleanup policy is in place for old reports | Manual / Config Review | Quota is enforced; old reports are cleaned up automatically; disk exhaustion is prevented |
 
 ---
 
 ## 3. ASVS Checklist (Level 1 – Architecture Focus)
 
-> Based on OWASP Application Security Verification Standard v4.0.3  
+> Based on OWASP Application Security Verification Standard v5.0.0  
 > Focus: Architecture, design, and threat modeling requirements (Phase 1 scope)
 
 ### V1 – Architecture, Design and Threat Modeling
@@ -186,6 +191,21 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | V13.2.1 | Verify enabled RESTful methods are a valid choice | ⬜ Planned | Only GET/POST/PATCH/DELETE used where appropriate |
 | V13.2.3 | Verify RESTful services are protected against CSRF | N/A | Stateless JWT; no cookies |
 
+### V15 – Secure Coding and Architecture
+
+| ID | Requirement | Status | Notes |
+|----|-------------|--------|-------|
+| V15.2.2 | Verify that the application has defenses against resource exhaustion from expensive or long-running operations | ⬜ Planned | SDR14 — quota on reports directory; TC36 |
+
+### V16 – Security Logging and Error Handling
+
+| ID | Requirement | Status | Notes |
+|----|-------------|--------|-------|
+| V16.3.1 | Verify that all authentication operations (login, failed login, logout) are logged with sufficient detail | ⬜ Planned | SDR19 — TC32 |
+| V16.3.2 | Verify that access control failures are logged with sufficient detail to identify the user and the denied resource | ⬜ Planned | SDR19 — all 403s logged with `sub` and resource |
+| V16.3.3 | Verify that all security-relevant events are logged, including privileged actions such as role changes and report generation | ⬜ Planned | SDR20 — TC33, TC34, TC30 |
+| V16.4.2 | Verify that log entries cannot be injected by external parties through structured log formatting | ⬜ Planned | Structured logging; no raw string concatenation |
+
 ---
 
 ## 4. Traceability Summary
@@ -220,3 +240,9 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 | T21 | Medium | TC29 | SDR19, SDR20 | V7.2.1 |
 | T25 | Medium | TC30 | SDR01, SDR20 | V7.2.1 |
 | T40 | Medium | TC31 | SDR19, SDR20 | V7.2.1, V7.2.2 |
+| T03 | High | TC32 | SDR19 | V16.3.1 |
+| T09 | High | TC33 | SDR20 | V16.3.3 |
+| T15 | High | TC34 | SDR20 | V16.3.3 |
+| T27 | High | TC30 | SDR01, SDR20 | V16.3.3 |
+| T32 | High | TC35 | SDR18 | V13.1.2 |
+| T35 | High | TC36 | SDR14 | V15.2.2 |
