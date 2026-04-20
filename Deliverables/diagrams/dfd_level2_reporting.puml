@@ -1,0 +1,51 @@
+@startuml DFD_Level2_Reporting_Coffeetaria
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam arrowColor #444444
+skinparam arrowFontSize 10
+skinparam rectangleBorderColor #444444
+skinparam packageBorderColor #F0A500
+skinparam packageBackgroundColor #FFFDE7
+skinparam packageFontColor #7D6608
+skinparam packageFontStyle bold
+
+title DFD Level 2 – P5 Reporting Process\nCoffeetaria
+
+' --- External Entity ---
+rectangle "Admin" as Admin #FADBD8
+
+' --- Trust Boundary ---
+package "Trust Boundary" {
+
+    usecase "P5.1\nAuthorise\nRequest" as P51 #FDFEFE
+    usecase "P5.2\nValidate\nParameters" as P52 #FDFEFE
+    usecase "P5.3\nQuery\nOrder Data" as P53 #FDFEFE
+    usecase "P5.4\nFormat\nReport (CSV)" as P54 #FDFEFE
+    usecase "P5.5\nWrite\nReport File" as P55 #FDFEFE
+    usecase "P5.6\nLog\nAudit Event" as P56 #FDFEFE
+
+    database "DS1\nUsers\n(PostgreSQL)" as DS1 #D5F5E3
+    database "DS3\nOrders\n(PostgreSQL)" as DS3 #D5F5E3
+    database "DS4\nReports & Logs\n(Filesystem)" as DS4 #D5F5E3
+}
+
+' --- Flows ---
+Admin --> P51 : report request\n(JWT + date range + filename) [HTTPS]
+P51 --> DS1   : read user role\nfor JWT validation
+P51 --> P52   : validated identity\n+ raw params
+
+P52 --> P53   : sanitised query params\n(date range validated,\nfilename pattern checked)
+
+P53 --> DS3   : read orders\nfor date range
+P53 --> P54   : raw order records
+
+P54 --> P55   : formatted CSV content
+P54 --> P56   : audit event\n(actor sub, timestamp,\ndate range, filename)
+
+P55 --> DS4   : write report file\n(restricted path, perms 600)
+P56 --> DS4   : append audit log entry
+
+P55 --> Admin : HTTP 200 +\nconfirmed filename [HTTPS]
+
+@enduml

@@ -117,6 +117,41 @@ The domain is organized into three aggregates following DDD principles.
 | F9 | P4. Order Mgmt | DS4. File System | Audit log entries (append-only) | Internal |
 | F10 | P5. Reporting | DS4. File System | Daily sales report (write) | Internal |
 
+### 3.3 DFD Level 2 – P5 Reporting Process
+
+The Reporting process interacts with the filesystem and multiple data stores, making it the highest-risk process in terms of path traversal, information disclosure, and audit trail integrity. A Level 2 decomposition is therefore justified.
+
+> **Diagram:** [`diagrams/dfd_level2_reporting.puml`](./diagrams/dfd_level2_reporting.puml)
+
+**Sub-processes:**
+
+| ID | Sub-process | Description |
+|----|-------------|-------------|
+| P5.1 | Authorise Request | Validates the JWT and confirms the caller holds the `ADMIN` role |
+| P5.2 | Validate Parameters | Enforces date-range bounds and validates the filename against an allowlist pattern (`^[a-zA-Z0-9_\-]+\.csv$`) |
+| P5.3 | Query Order Data | Reads order records from DS3 for the validated date range |
+| P5.4 | Format Report (CSV) | Aggregates and serialises order data into CSV; triggers the audit event |
+| P5.5 | Write Report File | Resolves the canonical path, confirms it is within the reports directory, writes with permissions `600` |
+| P5.6 | Log Audit Event | Appends an entry to DS4 (audit log) recording actor `sub`, IP, timestamp, date range, and output filename |
+
+**Trust boundary note:** All sub-processes are inside the trust boundary. The Admin is the only external entity. DS1 is read only to validate the JWT role; DS3 is read-only for order data; DS4 is write-only (append) for both the report file and the audit log.
+
+**Key data flows:**
+
+| Flow | From | To | Data |
+|------|------|----|------|
+| F-R1 | Admin | P5.1 | JWT + date range + filename [HTTPS] |
+| F-R2 | P5.1 | DS1 | Read user role for JWT validation |
+| F-R3 | P5.1 | P5.2 | Validated identity + raw params |
+| F-R4 | P5.2 | P5.3 | Sanitised query params |
+| F-R5 | P5.3 | DS3 | Read orders for date range |
+| F-R6 | P5.3 | P5.4 | Raw order records |
+| F-R7 | P5.4 | P5.5 | Formatted CSV content |
+| F-R8 | P5.4 | P5.6 | Audit event (actor, params, filename) |
+| F-R9 | P5.5 | DS4 | Write report file (restricted path, perms 600) |
+| F-R10 | P5.6 | DS4 | Append audit log entry |
+| F-R11 | P5.5 | Admin | HTTP 200 + confirmed filename [HTTPS] |
+
 ---
 
 ## 4. Secure Design Decisions
