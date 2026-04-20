@@ -24,7 +24,7 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 1. Review DFD elements against the implemented architecture at the end of each sprint
 2. Verify each High/Critical threat has a corresponding mitigation implemented or planned
 3. Update the threat model if new components or data flows are introduced
-4. Validate ASVS checklist items against the current implementation
+4. Validate that all High/Critical threats from the threat model have corresponding test cases
 
 ---
 
@@ -76,179 +76,53 @@ Security testing in Coffeetaria follows a layered approach aligned with the SSDL
 
 ---
 
-## 3. ASVS Checklist (Level 1 – Architecture Focus)
+## 3. ASVS 5.0 Compliance Tracking
 
-> Based on OWASP Application Security Verification Standard v5.0.0  
-> Focus: Architecture, design, and threat modeling requirements (Phase 1 scope)
+The full OWASP ASVS 5.0.0 compliance checklist — covering V1 through V17, with status, observations, and references per requirement — is maintained in the dedicated Excel tracker:
 
-### V1 – Architecture, Design and Threat Modeling
+> **`Deliverables/ASVS_5_0_Tracker.xlsx`**
 
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V1.1.1 | Verify the use of a secure SDLC with security considered in all phases | ✅ Done | Phase 1 follows SSDLC with threat modeling and secure requirements |
-| V1.1.2 | Verify the use of threat modeling for every design change | ✅ Done | STRIDE model produced per DFD element |
-| V1.1.3 | Verify all user stories and features have functional security constraints | ✅ Done | Abuse cases defined in `analysis.md §4` |
-| V1.1.4 | Verify documentation and justification of all application trust boundaries | ✅ Done | Trust boundaries defined in `design.md §3` |
-| V1.1.5 | Verify definition and security analysis of all application components | ✅ Done | Components described in `design.md §1.3` |
-| V1.1.6 | Verify a high-level architecture exists and is maintained | ✅ Done | Architecture defined in `design.md §1` |
-| V1.2.1 | Verify that communications between components use secure channels | ⬜ Planned | HTTPS enforced; internal service calls via localhost |
-| V1.2.2 | Verify that all components have necessary authentication | ⬜ Planned | JWT enforced on all protected endpoints |
-| V1.2.3 | Verify that a single vetted authentication mechanism is used | ⬜ Planned | JWT RS256 — single auth mechanism |
-| V1.2.4 | Verify that all authentication pathways use equivalent security | ⬜ Planned | Single login endpoint; no alternative auth paths |
-
-### V2 – Authentication
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V2.1.1 | Verify passwords are at least 12 characters | ⬜ Planned | SDR05 |
-| V2.1.2 | Verify passwords up to 128 characters are allowed | ⬜ Planned | No arbitrary truncation |
-| V2.1.3 | Verify password truncation is not performed | ⬜ Planned | |
-| V2.1.6 | Verify that a "change password" feature requires current + new password | ⬜ Planned | |
-| V2.1.9 | Verify no composition rules limiting characters | ⬜ Planned | |
-| V2.2.1 | Verify anti-automation controls to prevent brute force attacks | ⬜ Planned | SDR04 — rate limiting |
-| V2.2.2 | Verify weak passwords are rejected (HaveIBeenPwned or similar) | ⬜ Planned | SDR05 |
-| V2.3.1 | Verify system-generated initial passwords are random and at least 6 chars | ⬜ Planned | |
-| V2.6.1 | Verify lookup secrets are random and at least 112 bits of entropy | N/A | No lookup secrets used |
-| V2.8.1 | Verify time-based OTPs have a defined lifetime | N/A | OTP not used |
-
-### V3 – Session Management
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V3.2.1 | Verify the application generates a new session token on authentication | ✅ Done | New JWT issued on each login |
-| V3.2.2 | Verify session tokens have at least 64 bits of entropy | ✅ Done | JWT with UUID + RS256 |
-| V3.3.1 | Verify logout invalidates the session token | ⬜ Planned | Token blacklist or short expiry strategy |
-| V3.3.2 | Verify session tokens expire after inactivity | ⬜ Planned | JWT exp claim set to 1h (SDR01) |
-| V3.4.1 | Verify cookie-based tokens use the Secure attribute | N/A | Stateless JWT; no cookies |
-
-### V4 – Access Control
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V4.1.1 | Verify access control rules are enforced on trusted server-side points | ⬜ Planned | SDR02 — role checks at service layer |
-| V4.1.2 | Verify all user and data attributes used for access control cannot be manipulated by users | ⬜ Planned | Role sourced from JWT, not request body |
-| V4.1.3 | Verify the principle of least privilege exists | ⬜ Planned | SDR15 — minimal OS and role permissions |
-| V4.1.5 | Verify access control failures are logged | ⬜ Planned | SDR19 — all 403s logged with user and resource |
-| V4.2.1 | Verify all user and data attributes and policy information used for access control cannot be manipulated by end users | ⬜ Planned | SDR02, SDR07 |
-| V4.2.2 | Verify CSRF protection is implemented | N/A | Stateless JWT API; no session cookies |
-| V4.3.1 | Verify admin interfaces use appropriate authentication and authorization | ⬜ Planned | Admin endpoints protected by ADMIN role JWT |
-
-### V5 – Validation, Sanitization and Encoding
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V5.1.1 | Verify that the application has defenses against HTTP parameter pollution attacks | ⬜ Planned | Spring Boot rejects duplicate params by default |
-| V5.1.2 | Verify that frameworks protect against mass parameter assignment attacks | ⬜ Planned | SDR07 — strict DTOs |
-| V5.1.3 | Verify all input is validated against an allowlist | ⬜ Planned | SDR06 — schema validation at API boundary |
-| V5.1.4 | Verify that structured data is strongly typed | ⬜ Planned | |
-| V5.2.1 | Verify all untrusted HTML input is sanitized | N/A | API returns JSON; no HTML rendering |
-| V5.3.4 | Verify data selection or database queries use parameterized queries | ⬜ Planned | SDR08 — ORM with parameterized queries |
-| V5.3.8 | Verify protection against OS command injection | ⬜ Planned | SDR13 — no user input passed to OS commands |
-
-### V7 – Error Handling and Logging
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V7.1.1 | Verify no sensitive credentials or PII in logs | ⬜ Planned | SDR16 |
-| V7.1.2 | Verify no sensitive data in error messages returned to clients | ⬜ Planned | SDR12 — generic error responses |
-| V7.2.1 | Verify all authentication decisions are logged | ⬜ Planned | SDR19 |
-| V7.2.2 | Verify all access control failures are logged | ⬜ Planned | SDR19 |
-| V7.3.1 | Verify logs are protected from injection | ⬜ Planned | Structured logging with no string concatenation |
-| V7.4.1 | Verify a generic message is shown on unexpected errors | ⬜ Planned | SDR12 |
-
-### V8 – Data Protection
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V8.1.1 | Verify the application protects sensitive data from being cached | ⬜ Planned | `Cache-Control: no-store` on sensitive endpoints |
-| V8.2.1 | Verify all cached or temporary copies of sensitive data are protected | ⬜ Planned | |
-| V8.3.1 | Verify sensitive data is not sent in URL parameters | ⬜ Planned | Credentials only in request body |
-| V8.3.4 | Verify all sensitive data created and processed by the application is identified | ✅ Done | Identified in `analysis.md`: passwords, tokens, PII |
-
-### V9 – Communication
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V9.1.1 | Verify TLS is used for all client connectivity | ⬜ Planned | SDR10 — HTTPS enforced |
-| V9.1.2 | Verify TLS 1.2 or higher is used | ⬜ Planned | SDR10 |
-| V9.1.3 | Verify only the latest TLS cipher suites are enabled | ⬜ Planned | Configured at reverse proxy level |
-| V9.2.1 | Verify that connections from the server use trusted certificates | ⬜ Planned | |
-
-### V12 – Files and Resources
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V12.1.1 | Verify that the application will not accept large files that could fill storage | ⬜ Planned | SDR14 — quota on reports directory |
-| V12.3.1 | Verify user-submitted filenames are not used directly in file operations | ⬜ Planned | SDR13 — allowlist validation on filenames |
-| V12.3.2 | Verify user-submitted filenames are validated against an allowlist | ⬜ Planned | SDR13 |
-| V12.3.3 | Verify protection against path traversal | ⬜ Planned | SDR13 — path canonicalization and prefix check |
-| V12.5.1 | Verify the web tier is configured to serve only files with permitted extensions | ⬜ Planned | Only `.csv` and `.log` extensions allowed |
-
-### V13 – API and Web Service
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V13.1.1 | Verify all application components use the same encoding and parsers | ⬜ Planned | UTF-8 enforced throughout |
-| V13.1.2 | Verify API URLs do not expose sensitive information | ⬜ Planned | No credentials or tokens in URLs |
-| V13.1.3 | Verify HTTP methods are validated against allowlist per endpoint | ⬜ Planned | Spring `@RequestMapping` restricts methods |
-| V13.2.1 | Verify enabled RESTful methods are a valid choice | ⬜ Planned | Only GET/POST/PATCH/DELETE used where appropriate |
-| V13.2.3 | Verify RESTful services are protected against CSRF | N/A | Stateless JWT; no cookies |
-
-### V15 – Secure Coding and Architecture
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V15.2.2 | Verify that the application has defenses against resource exhaustion from expensive or long-running operations | ⬜ Planned | SDR14 — quota on reports directory; TC36 |
-
-### V16 – Security Logging and Error Handling
-
-| ID | Requirement | Status | Notes |
-|----|-------------|--------|-------|
-| V16.3.1 | Verify that all authentication operations (login, failed login, logout) are logged with sufficient detail | ⬜ Planned | SDR19 — TC32 |
-| V16.3.2 | Verify that access control failures are logged with sufficient detail to identify the user and the denied resource | ⬜ Planned | SDR19 — all 403s logged with `sub` and resource |
-| V16.3.3 | Verify that all security-relevant events are logged, including privileged actions such as role changes and report generation | ⬜ Planned | SDR20 — TC33, TC34, TC30 |
-| V16.4.2 | Verify that log entries cannot be injected by external parties through structured log formatting | ⬜ Planned | Structured logging; no raw string concatenation |
+The tracker records, for each applicable ASVS requirement: compliance status (Done / Planned / N/A), project-specific observations, and links to the relevant SDR, test case, or design section.
 
 ---
 
 ## 4. Traceability Summary
 
-| Threat ID | Risk | Test Case(s) | SDR(s) | ASVS |
-|-----------|------|--------------|--------|------|
-| T01 | Critical | TC01 | SDR04, SDR05 | V2.2.1, V2.2.2 |
-| T02 | High | TC02 | SDR01, SDR03 | V3.2.1 |
-| T04 | High | TC03 | SDR09 | V7.4.1 |
-| T05 | Critical | TC04 | SDR04 | V2.2.1 |
-| T06 | Medium | TC05 | SDR01 | V3.2.2 |
-| T08 | High | TC06 | SDR07 | V5.1.2 |
-| T10 | Medium | TC07 | SDR09 | V8.3.4 |
-| T11 | High | TC08 | SDR04 | V2.2.1 |
-| T12 | High | TC09 | SDR02 | V4.1.1 |
-| T18 | High | TC10 | SDR02 | V4.1.1 |
-| T20 | High | TC11 | SDR06 | V5.1.3 |
-| T22 | High | TC12 | SDR02, SDR06 | V4.1.1, V4.2.1 |
-| T23 | High | TC13 | SDR04 | V2.2.1 |
-| T24 | Medium | TC14 | SDR02 | V4.1.1 |
-| T28 | High | TC15 | SDR13 | V12.3.2, V12.3.3 |
-| T29 | High | TC16 | SDR14 | V12.1.1 |
-| T30 | Medium | TC17 | SDR08 | V5.3.4 |
-| T31 | Medium | TC18 | SDR18 | — |
-| T33 | Medium | TC19 | SDR21 | V7.3.1 |
-| T34 | Medium | TC20 | SDR14 | V12.5.1 |
-| T37 | High | TC21 | SDR10, SDR11 | V9.1.1 |
-| T39 | High | TC22 | SDR01, SDR10 | V3.3.2 |
-| T07 | Medium | TC26 | SDR01, SDR03 | V3.3.1 |
-| T17 | Medium | TC27 | SDR04 | V2.2.1 |
-| T19 | Medium | TC28 | SDR01, SDR06 | V4.1.2 |
-| T21 | Medium | TC29 | SDR19, SDR20 | V7.2.1 |
-| T25 | Medium | TC30 | SDR01, SDR20 | V7.2.1 |
-| T40 | Medium | TC31 | SDR19, SDR20 | V7.2.1, V7.2.2 |
-| T03 | High | TC32 | SDR19 | V16.3.1 |
-| T09 | High | TC33 | SDR20 | V16.3.3 |
-| T15 | High | TC34 | SDR20 | V16.3.3 |
-| T27 | High | TC30 | SDR01, SDR20 | V16.3.3 |
-| T32 | High | TC35 | SDR18 | V13.1.2 |
-| T35 | High | TC36 | SDR14 | V15.2.2 |
-| — | — | TC37 | SDR13, SDR14 | V1.2.10 |
-| — | — | TC38 | SDR02 | V2.3.1 |
-| — | — | TC39 | SDR06 | V2.3.3 |
+| Threat ID | Risk | Test Case(s) | SDR(s) |
+|-----------|------|--------------|--------|
+| T01 | Critical | TC01 | SDR04, SDR05 |
+| T02 | High | TC02 | SDR01, SDR03 |
+| T03 | High | TC32 | SDR19 |
+| T04 | High | TC03 | SDR09 |
+| T05 | Critical | TC04 | SDR04 |
+| T06 | Medium | TC05 | SDR01 |
+| T07 | Medium | TC26 | SDR01, SDR03 |
+| T08 | High | TC06 | SDR07 |
+| T09 | High | TC33 | SDR20 |
+| T10 | Medium | TC07 | SDR09 |
+| T11 | High | TC08 | SDR04 |
+| T12 | High | TC09 | SDR02 |
+| T15 | High | TC34 | SDR20 |
+| T17 | Medium | TC27 | SDR04 |
+| T18 | High | TC10 | SDR02 |
+| T19 | Medium | TC28 | SDR01, SDR06 |
+| T20 | High | TC11 | SDR06 |
+| T21 | Medium | TC29 | SDR19, SDR20 |
+| T22 | High | TC12 | SDR02, SDR06 |
+| T23 | High | TC13 | SDR04 |
+| T24 | Medium | TC14 | SDR02 |
+| T25, T27 | Medium | TC30 | SDR01, SDR20 |
+| T28 | High | TC15 | SDR13 |
+| T29 | High | TC16 | SDR14 |
+| T30 | Medium | TC17 | SDR08 |
+| T31 | Medium | TC18 | SDR18 |
+| T32 | High | TC35 | SDR18 |
+| T33 | Medium | TC19 | SDR21 |
+| T34 | Medium | TC20 | SDR14 |
+| T35 | High | TC36 | SDR14 |
+| T37 | High | TC21 | SDR10, SDR11 |
+| T39 | High | TC22 | SDR01, SDR10 |
+| T40 | Medium | TC31 | SDR19, SDR20 |
+| — | — | TC37 | SDR13, SDR14 |
+| — | — | TC38 | SDR02 |
+| — | — | TC39 | SDR06 |
