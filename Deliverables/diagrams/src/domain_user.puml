@@ -1,0 +1,55 @@
+@startuml Domain_User_Aggregate
+!theme plain
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #444444
+skinparam classHeaderBackgroundColor #1A5276
+skinparam classHeaderFontColor #FFFFFF
+skinparam arrowColor #444444
+skinparam shadowing false
+skinparam packageBackgroundColor #EBF5FB
+skinparam packageBorderColor #2980B9
+skinparam packageFontStyle bold
+
+title Aggregate: User
+
+package "Aggregate: User" #EBF5FB {
+
+    class User <<Aggregate Root>> {
+        + externalId : String (UUID)
+        + username : String
+        + passwordHash : String
+        + type : UserType
+        + balance : BigDecimal
+        --
+        + deductBalance(amount)
+        + addBalance(amount)
+        + hasEnoughBalance(amount) : boolean
+        + updateDetails(...)
+    }
+
+    enum UserType <<Enumeration>> {
+        CLIENT
+        EMPLOYEE
+        ADMIN
+    }
+}
+
+User *-- UserType : has >
+
+note right of User
+  EMPLOYEE: balance = null
+  CLIENT/ADMIN: balance >= 0
+  Only CLIENT/ADMIN can place purchases
+end note
+
+note right of UserType
+  CLIENT - places orders, has balance
+  EMPLOYEE - manages menus and dishes
+  ADMIN - full system access
+end note
+
+@enduml

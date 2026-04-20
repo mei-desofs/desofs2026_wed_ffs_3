@@ -8,6 +8,8 @@ Coffeetaria is a backend REST API application following a layered architecture b
 
 ### 1.1 Architectural Layers
 
+> [`diagrams/src/architecture.puml`](./diagrams/src/architecture.puml) · [`diagrams/img/Architecture_Coffeetaria.png`](./diagrams/img/Architecture_Coffeetaria.png)
+
 | Layer | Responsibility |
 |-------|---------------|
 | API / Controller | HTTP request handling, input validation, authentication enforcement |
@@ -44,17 +46,19 @@ Coffeetaria is a backend REST API application following a layered architecture b
 
 The domain is organized into three aggregates following DDD principles.
 
-> **Diagram:** [`diagrams/domain_model.puml`](./diagrams/domain_model.puml)
-
-![Domain Model](./diagrams/domain_model.png)
+| Aggregate | Source | Image |
+|-----------|--------|-------|
+| User | [`src/domain_user.puml`](./diagrams/src/domain_user.puml) | [`img/Domain_User_Aggregate.png`](./diagrams/img/Domain_User_Aggregate.png) |
+| Menu | [`src/domain_menu.puml`](./diagrams/src/domain_menu.puml) | [`img/Domain_Menu_Aggregate.png`](./diagrams/img/Domain_Menu_Aggregate.png) |
+| Purchase | [`src/domain_purchase.puml`](./diagrams/src/domain_purchase.puml) | [`img/Domain_Purchase_Aggregate.png`](./diagrams/img/Domain_Purchase_Aggregate.png) |
 
 ### Aggregates Summary
 
 | Aggregate | Root | Entities | Value Objects |
 |-----------|------|----------|---------------|
-| User | `User` | — | `Email`, `Role` |
-| Menu | `Menu` | `Dish`, `Ingredient` | `Money` |
-| Order | `Order` | `OrderItem` | `OrderRef`, `OrderStatus`, `Money` |
+| User | `User` | — | `UserType` |
+| Menu | `Menu` | `Dish`, `Ingredient` | `Name`, `IngredientType`, `Allergen` |
+| Purchase | `Purchase` | — | — |
 
 **Roles:** `CLIENT` · `EMPLOYEE` · `ADMIN`
 
@@ -66,9 +70,9 @@ The domain is organized into three aggregates following DDD principles.
 
 ### 3.1 DFD Level 0 – Context Diagram
 
-> **Diagram:** [`diagrams/dfd_level0.puml`](./diagrams/dfd_level0.puml)
+> **Diagram:** [`diagrams/src/dfd_level0.puml`](./diagrams/src/dfd_level0.puml)
 
-![DFD Level 0](./diagrams/dfd_level0.png)
+![DFD Level 0](./diagrams/img/DFD_Level0_Coffeetaria.png)
 
 **Trust Boundaries:**
 - All external entities (Client, Employee, Admin) are **outside** the trust boundary
@@ -79,9 +83,9 @@ The domain is organized into three aggregates following DDD principles.
 
 ### 3.2 DFD Level 1 – Internal Processes
 
-> **Diagram:** [`diagrams/dfd_level1.puml`](./diagrams/dfd_level1.puml)
+> **Diagram:** [`diagrams/src/dfd_level1.puml`](./diagrams/src/dfd_level1.puml)
 
-![DFD Level 1](./diagrams/dfd_level1.png)
+![DFD Level 1](./diagrams/img/DFD_Level1_Coffeetaria.png)
 
 **Processes:**
 
@@ -121,7 +125,7 @@ The domain is organized into three aggregates following DDD principles.
 
 The Reporting process interacts with the filesystem and multiple data stores, making it the highest-risk process in terms of path traversal, information disclosure, and audit trail integrity. A Level 2 decomposition is therefore justified.
 
-> **Diagram:** [`diagrams/dfd_level2_reporting.puml`](./diagrams/dfd_level2_reporting.puml)
+> **Diagram:** [`diagrams/src/dfd_level2_reporting.puml`](./diagrams/src/dfd_level2_reporting.puml)
 
 **Sub-processes:**
 
@@ -154,7 +158,114 @@ The Reporting process interacts with the filesystem and multiple data stores, ma
 
 ---
 
-## 4. Secure Design Decisions
+## 4. Database Schema
+
+> [`diagrams/src/db_schema.puml`](./diagrams/src/db_schema.puml) · [`diagrams/img/DB_Schema_Coffeetaria.png`](./diagrams/img/DB_Schema_Coffeetaria.png)
+
+| Table | Description |
+|-------|-------------|
+| `users` | User accounts with role and optional pre-paid balance |
+| `dishes` | Cafeteria dishes with name and price |
+| `ingredients` | Ingredients with type and allergen classification |
+| `dish_ingredients` | Many-to-many join between dishes and ingredients |
+| `menus` | Daily menus with references to meat, fish and vegetarian dishes |
+| `purchases` | Client purchase records linking user, dish and date |
+
+---
+
+## 5. Authentication Flow
+
+> [`diagrams/src/auth_flow.puml`](./diagrams/src/auth_flow.puml) · [`diagrams/img/Auth_Flow_Coffeetaria.png`](./diagrams/img/Auth_Flow_Coffeetaria.png)
+
+---
+
+## 6. API Design
+
+### 6.1 Authentication
+
+| Method | Endpoint | Auth | Roles | Description |
+|--------|----------|------|-------|-------------|
+| POST | `/api/auth/login` | None | Public | Authenticate with email + password; returns JWT |
+| POST | `/api/auth/register` | None | Public | Register a new user account (default role: CLIENT) |
+
+### 6.2 User Management
+
+| Method | Endpoint | Auth | Roles | Description |
+|--------|----------|------|-------|-------------|
+| GET | `/api/users` | JWT | ADMIN | List all users |
+| GET | `/api/users/{id}` | JWT | ADMIN | Get user by ID |
+| GET | `/api/users/by-username/{username}` | JWT | ADMIN | Get user by username |
+| POST | `/api/users` | JWT | ADMIN | Create a new user |
+| PUT | `/api/users/{id}` | JWT | ADMIN | Update user by ID |
+| DELETE | `/api/users/{id}` | JWT | ADMIN | Delete user by ID |
+| GET | `/api/users/me` | JWT | ADMIN, CLIENT | Get own profile |
+| PUT | `/api/users/me` | JWT | ADMIN, CLIENT | Update own profile |
+
+### 6.3 Dish Management
+
+| Method | Endpoint | Auth | Roles | Description |
+|--------|----------|------|-------|-------------|
+| GET | `/api/dishes` | JWT | ADMIN, EMPLOYEE, CLIENT | List all dishes |
+| GET | `/api/dishes/{id}` | JWT | ADMIN, EMPLOYEE, CLIENT | Get dish by ID |
+| POST | `/api/dishes` | JWT | ADMIN, EMPLOYEE | Create a new dish |
+| PUT | `/api/dishes/{id}` | JWT | ADMIN, EMPLOYEE | Update dish by ID |
+| DELETE | `/api/dishes/{id}` | JWT | ADMIN, EMPLOYEE | Delete dish by ID |
+
+### 6.4 Ingredient Management
+
+| Method | Endpoint | Auth | Roles | Description |
+|--------|----------|------|-------|-------------|
+| GET | `/api/ingredients` | JWT | ADMIN, EMPLOYEE, CLIENT | List all ingredients |
+| GET | `/api/ingredients/{id}` | JWT | ADMIN, EMPLOYEE, CLIENT | Get ingredient by ID |
+| POST | `/api/ingredients` | JWT | ADMIN, EMPLOYEE | Create a new ingredient |
+| PUT | `/api/ingredients/{id}` | JWT | ADMIN, EMPLOYEE | Update ingredient by ID |
+| DELETE | `/api/ingredients/{id}` | JWT | ADMIN, EMPLOYEE | Delete ingredient by ID |
+
+### 6.5 Menu Management
+
+| Method | Endpoint | Auth | Roles | Description |
+|--------|----------|------|-------|-------------|
+| GET | `/api/menus` | JWT | ADMIN, EMPLOYEE, CLIENT | List all menus |
+| GET | `/api/menus/{id}` | JWT | ADMIN, EMPLOYEE, CLIENT | Get menu by ID |
+| GET | `/api/menus/by-date/{date}` | JWT | ADMIN, EMPLOYEE, CLIENT | Get menu by date |
+| POST | `/api/menus` | JWT | ADMIN, EMPLOYEE¹ | Create/publish a menu |
+| PUT | `/api/menus/{id}` | JWT | ADMIN, EMPLOYEE | Update menu by ID |
+| DELETE | `/api/menus/{id}` | JWT | ADMIN, EMPLOYEE | Delete menu by ID |
+
+> ¹ EMPLOYEE can only publish menus for future dates (`@PreAuthorize` constraint)
+
+### 6.6 Purchase Management
+
+| Method | Endpoint | Auth | Roles | Description |
+|--------|----------|------|-------|-------------|
+| GET | `/api/purchases` | JWT | ADMIN, CLIENT | List purchases |
+| GET | `/api/purchases/{id}` | JWT | ADMIN, CLIENT | Get purchase by ID |
+| GET | `/api/purchases/by-client/{clientId}` | JWT | ADMIN, CLIENT | List purchases by client |
+| GET | `/api/purchases/client/{clientId}` | JWT | ADMIN, CLIENT | List purchases by client (alt) |
+| GET | `/api/purchases/date/{date}` | JWT | ADMIN, CLIENT | List purchases by date |
+| POST | `/api/purchases` | JWT | ADMIN, CLIENT | Place a new purchase/order |
+| PUT | `/api/purchases/{id}` | JWT | ADMIN, CLIENT | Update purchase by ID |
+| DELETE | `/api/purchases/{id}` | JWT | ADMIN, CLIENT | Delete purchase by ID |
+
+### 6.7 Authentication Flow
+
+```
+Client                        API
+  │                            │
+  │── POST /api/auth/login ───▶│
+  │   { email, password }      │  1. Validate credentials
+  │                            │  2. Issue JWT (RS256, exp: 1h)
+  │◀── 200 { token: "..." } ───│
+  │                            │
+  │── GET /api/menus           │
+  │   Authorization: Bearer …  │  3. Validate JWT signature + expiry
+  │                            │  4. Extract role from claims
+  │◀── 200 [ menus... ] ───────│  5. Enforce role-based access
+```
+
+---
+
+## 7. Secure Design Decisions
 
 | Decision | Rationale |
 |----------|-----------|

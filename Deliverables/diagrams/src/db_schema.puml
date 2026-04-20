@@ -1,0 +1,102 @@
+@startuml DB_Schema_Coffeetaria
+!theme plain
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontSize 12
+skinparam classBorderColor #444444
+skinparam classBackgroundColor #FAFAFA
+skinparam classHeaderBackgroundColor #2C3E50
+skinparam classHeaderFontColor #FFFFFF
+skinparam arrowColor #444444
+skinparam packageBorderColor #2980B9
+skinparam packageBackgroundColor #EBF5FB
+skinparam packageFontStyle bold
+
+title Database Schema - Coffeetaria
+
+package "users" #EBF5FB {
+    class users {
+        <b>PK</b>  id : BIGINT (auto)
+        <b>UQ</b>  external_id : VARCHAR NOT NULL
+        <b>UQ</b>  username : VARCHAR NOT NULL
+        ..
+        password : VARCHAR NOT NULL
+        type : ENUM(EMPLOYEE, CLIENT, ADMIN) NOT NULL
+        balance : DECIMAL(10,2)
+    }
+}
+
+package "menu" #E9F7EF {
+    class dishes {
+        <b>PK</b>  id : BIGINT (auto)
+        <b>UQ</b>  external_id : VARCHAR NOT NULL
+        <b>UQ</b>  name : VARCHAR NOT NULL
+        ..
+        price : DECIMAL(10,2) NOT NULL
+    }
+
+    class ingredients {
+        <b>PK</b>  id : BIGINT (auto)
+        <b>UQ</b>  external_id : VARCHAR NOT NULL
+        <b>UQ</b>  name : VARCHAR NOT NULL
+        ..
+        type : ENUM(IngredientType) NOT NULL
+        allergen : ENUM(Allergen) NOT NULL
+    }
+
+    class dish_ingredients {
+        <b>FK</b>  dish_id : BIGINT NOT NULL
+        <b>FK</b>  ingredient_id : BIGINT NOT NULL
+    }
+
+    class menus {
+        <b>PK</b>  id : BIGINT (auto)
+        <b>UQ</b>  external_id : VARCHAR NOT NULL
+        <b>UQ</b>  date : DATE NOT NULL
+        ..
+        <b>FK</b>  meat_dish_id : BIGINT
+        <b>FK</b>  fish_dish_id : BIGINT
+        <b>FK</b>  vegetarian_dish_id : BIGINT
+    }
+}
+
+package "purchases" #FEF9E7 {
+    class purchases {
+        <b>PK</b>  id : BIGINT (auto)
+        <b>UQ</b>  external_id : VARCHAR NOT NULL
+        ..
+        <b>FK</b>  client_id : BIGINT NOT NULL
+        <b>FK</b>  dish_id : BIGINT NOT NULL
+        date : DATE NOT NULL
+    }
+}
+
+' --- Relationships ---
+dishes "1" -- "0..*" dish_ingredients : dish_id >
+ingredients "1" -- "0..*" dish_ingredients : ingredient_id >
+
+menus }o-- "0..1" dishes : meat_dish_id >
+menus }o-- "0..1" dishes : fish_dish_id >
+menus }o-- "0..1" dishes : vegetarian_dish_id >
+
+purchases }o-- "1" users : client_id >
+purchases }o-- "1" dishes : dish_id >
+
+note bottom of users
+  balance = NULL for EMPLOYEE
+  balance >= 0 for CLIENT/ADMIN
+end note
+
+note bottom of menus
+  date must be in the future
+  each dish slot validated by type:
+  meat (MEAT/EGGS), fish (FISH),
+  vegetarian (no MEAT/FISH)
+end note
+
+note bottom of purchases
+  date must be in the future
+  client.balance >= dish.price
+end note
+
+@enduml

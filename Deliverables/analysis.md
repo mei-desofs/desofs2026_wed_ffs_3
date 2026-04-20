@@ -22,8 +22,8 @@ Coffeetaria is a cafeteria management backend system that allows clients to brow
 
 | ID | Requirement |
 |----|-------------|
-| FR01 | The system shall allow users to register with email, password, and name |
-| FR02 | The system shall authenticate users via email and password, returning a JWT token |
+| FR01 | The system shall allow users to register with a unique username and password |
+| FR02 | The system shall authenticate users via username and password, returning a JWT token |
 | FR03 | The system shall allow users to log out, invalidating their session token |
 | FR04 | The system shall enforce role-based access on all protected endpoints |
 | FR05 | The system shall allow admins to deactivate or delete user accounts |
@@ -52,8 +52,11 @@ Coffeetaria is a cafeteria management backend system that allows clients to brow
 
 | ID | Requirement |
 |----|-------------|
-| FR16 | The system shall allow clients to place an order from the current day's menu |
+| FR16 | The system shall allow clients to place an order for a future date from the available menu |
 | FR17 | The system shall assign a unique order reference to each placed order |
+| FR17a | The system shall maintain a pre-paid balance for CLIENT accounts; placing an order deducts the dish price from the client's balance |
+| FR17b | The system shall reject an order if the client's balance is insufficient to cover the total price |
+| FR17c | EMPLOYEE accounts shall not have a balance and shall not be able to place orders |
 | FR18 | The system shall allow clients to view their own order history |
 | FR19 | The system shall allow employees to list all pending orders |
 | FR20 | The system shall allow employees to update an order's status (PENDING → PREPARING → READY → DELIVERED) |

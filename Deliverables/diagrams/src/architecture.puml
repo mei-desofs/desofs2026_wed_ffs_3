@@ -1,0 +1,59 @@
+@startuml Architecture_Coffeetaria
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #444444
+skinparam arrowColor #444444
+skinparam packageBorderColor #888888
+
+title System Architecture - Coffeetaria
+
+rectangle "Client / Employee / Admin\n(API Consumer)" as Actor #D6EAF8
+
+rectangle "Reverse Proxy / TLS Termination\n(HTTPS enforced)" as Proxy #FADBD8
+
+package "Spring Boot Application" #FFF8E1 {
+
+    rectangle "Controller Layer\nInput validation - Auth enforcement - HTTP routing" as Controller #AED6F1
+
+    rectangle "Application / Service Layer\nUse cases - Orchestration - Authorization checks" as Service #A9DFBF
+
+    rectangle "Domain Layer\nAggregates - Entities - Value Objects - Business rules" as Domain #F9E79F
+
+    rectangle "Infrastructure Layer\nJPA Repositories - JWT Filter - File Util" as Infra #D7BDE2
+}
+
+database "PostgreSQL\n(Domain data)" as DB #D5F5E3
+database "File System\n(Reports & Audit Logs)" as FS #D5F5E3
+
+Actor --> Proxy : HTTPS request
+Proxy --> Controller : forwarded request
+
+Controller --> Service
+Service --> Domain
+Domain --> Infra
+
+Infra --> DB : JPA / SQL
+Infra --> FS : java.nio (read/write)
+
+note right of Proxy
+  Rejects plain HTTP
+  Sets HSTS header
+end note
+
+note right of Controller
+  JWT validated here
+  Role extracted from token claims
+end note
+
+note right of Service
+  Business logic enforced
+  Authorization double-checked
+end note
+
+note right of Infra
+  Parameterized queries only
+  File paths validated against allowlist
+end note
+
+@enduml

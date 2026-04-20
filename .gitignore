@@ -1,0 +1,3 @@
+project/target/
+project/package-lock.json
+*.class

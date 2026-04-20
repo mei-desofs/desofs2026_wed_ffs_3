@@ -1,0 +1,57 @@
+@startuml Domain_Purchase_Aggregate
+!theme plain
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #444444
+skinparam classHeaderBackgroundColor #7D6608
+skinparam classHeaderFontColor #FFFFFF
+skinparam arrowColor #444444
+skinparam shadowing false
+skinparam packageBackgroundColor #FEF9E7
+skinparam packageBorderColor #F0B27A
+skinparam packageFontStyle bold
+
+title Aggregate: Purchase
+
+package "Aggregate: Purchase" #FEF9E7 {
+
+    class Purchase <<Aggregate Root>> {
+        + externalId : String (UUID)
+        + date : LocalDate
+        --
+        + updateDetails(client, dish, date)
+        - validatePurchase(client, dish, date)
+    }
+}
+
+package "References (other aggregates)" #F2F3F4 {
+    class User <<ref>> {
+        + externalId : String
+        + username : String
+        + balance : BigDecimal
+        --
+        + hasEnoughBalance(amount) : boolean
+        + deductBalance(amount)
+    }
+
+    class Dish <<ref>> {
+        + externalId : String
+        + name : Name
+        + price : BigDecimal
+    }
+}
+
+Purchase }o-- "1" User : client >
+Purchase }o-- "1" Dish : dish >
+
+note right of Purchase
+  date must be in the future
+  client.balance >= dish.price
+  client must NOT be EMPLOYEE
+  balance is deducted on creation
+end note
+
+@enduml

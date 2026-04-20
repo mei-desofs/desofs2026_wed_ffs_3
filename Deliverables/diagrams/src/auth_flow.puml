@@ -1,0 +1,62 @@
+@startuml Auth_Flow_Coffeetaria
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #FAFAFA
+skinparam sequenceParticipantBorderColor #444444
+skinparam sequenceLifeLineBorderColor #888888
+skinparam sequenceGroupBackgroundColor #FFF8E1
+skinparam sequenceGroupBorderColor #F0A500
+skinparam noteBorderColor #888888
+skinparam noteBackgroundColor #FFFDE7
+
+title Authentication Flow - Coffeetaria (JWT RS256)
+
+actor "User" as U
+participant "Controller\n(AuthController)" as C
+participant "UserDetailsService" as UDS
+participant "JwtTokenUtil" as JWT
+database "users table" as DB
+
+== Login ==
+
+U -> C : POST /api/auth/login\n{ username, password }
+
+C -> UDS : loadUserByUsername(username)
+UDS -> DB : SELECT * FROM users WHERE username = ?
+DB --> UDS : User record
+UDS --> C : UserDetails
+
+C -> C : passwordEncoder.matches(raw, hash)
+
+alt Invalid credentials
+    C --> U : 401 Unauthorized\n{ "Invalid credentials" }
+else Valid credentials
+    C -> JWT : generateToken(userDetails, role)
+    JWT --> C : signed JWT (RS256, exp: 1h)
+    C --> U : 200 OK\n{ token, username, role }
+end
+
+== Authenticated Request ==
+
+U -> C : GET /api/menus\nAuthorization: Bearer <token>
+
+C -> JWT : validateToken(token)
+
+alt Token invalid or expired
+    JWT --> C : false
+    C --> U : 401 Unauthorized
+else Token valid
+    JWT --> C : true + claims (sub, role)
+    C -> C : SecurityContextHolder.setAuthentication()
+    C -> C : @PreAuthorize / SecurityConfig role check
+
+    alt Insufficient role
+        C --> U : 403 Forbidden
+    else Authorized
+        C --> U : 200 OK + response body
+    end
+end
+
+@enduml

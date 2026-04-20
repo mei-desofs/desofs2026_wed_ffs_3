@@ -1,0 +1,100 @@
+@startuml Domain_Menu_Aggregate
+!theme plain
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #444444
+skinparam classHeaderBackgroundColor #1E8449
+skinparam classHeaderFontColor #FFFFFF
+skinparam arrowColor #444444
+skinparam shadowing false
+skinparam packageBackgroundColor #E9F7EF
+skinparam packageBorderColor #27AE60
+skinparam packageFontStyle bold
+
+title Aggregate: Menu
+
+package "Aggregate: Menu" #E9F7EF {
+
+    class Menu <<Aggregate Root>> {
+        + externalId : String (UUID)
+        + date : LocalDate
+        --
+        + updateDetails(date, meatDish, fishDish, vegetarianDish)
+        - validateFutureDate()
+        - validateMeatDish()
+        - validateFishDish()
+        - validateVegetarianDish()
+    }
+
+    class Dish <<Entity>> {
+        + externalId : String (UUID)
+        + name : Name
+        + price : BigDecimal
+        --
+        + isVegetarian() : boolean
+        + updateDetails(name, ingredients, price)
+    }
+
+    class Ingredient <<Entity>> {
+        + externalId : String (UUID)
+        + name : Name
+        + type : IngredientType
+        + allergen : Allergen
+        --
+        + updateDetails(name, type, allergen)
+    }
+
+    class Name <<Value Object>> {
+        + value : String
+        --
+        + validate()
+    }
+
+    enum IngredientType <<Enumeration>> {
+        CEREALS_AND_DERIVATIVES
+        TUBERS
+        VEGETABLES
+        FRUIT
+        DAIRY_PRODUCTS
+        MEAT
+        FISH
+        EGGS
+        LEGUMES
+        FATS_AND_OILS
+    }
+
+    enum Allergen <<Enumeration>> {
+        NONE
+        GLUTEN_CONTAINING_CEREALS
+        NUTS
+        CRUSTACEANS
+        EGGS
+        FISH
+        MILK_AND_MILK_PRODUCTS
+        PEANUTS
+        SOYBEANS
+        SULPHITES
+        .. (EU 14 allergens)
+    }
+}
+
+Menu "1" o-- "0..1" Dish : meatDish >
+Menu "1" o-- "0..1" Dish : fishDish >
+Menu "1" o-- "0..1" Dish : vegetarianDish >
+Dish "1" *-- "1..*" Ingredient : ingredients >
+Dish *-- Name : name >
+Ingredient *-- Name : name >
+Ingredient *-- IngredientType : type >
+Ingredient *-- Allergen : allergen >
+
+note right of Menu
+  date must be in the future
+  meatDish must have MEAT or EGGS ingredient
+  fishDish must have FISH ingredient
+  vegetarianDish must NOT have MEAT or FISH
+end note
+
+@enduml

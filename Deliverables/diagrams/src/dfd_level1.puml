@@ -1,0 +1,64 @@
+@startuml DFD_Level1_Coffeetaria
+!theme plain
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam arrowColor #444444
+skinparam arrowFontSize 10
+skinparam rectangleBorderColor #444444
+skinparam packageBorderColor #F0A500
+skinparam packageBackgroundColor #FFFDE7
+skinparam packageFontColor #7D6608
+skinparam packageFontStyle bold
+
+title DFD Level 1 - Internal Processes\nCoffeetaria
+
+' --- External Entities ---
+rectangle "Client" as Client #D6EAF8
+rectangle "Employee" as Employee #D6EAF8
+rectangle "Admin" as Admin #FADBD8
+
+' --- Trust Boundary ---
+package "Trust Boundary" {
+
+    usecase "P1\nAuthentication\n(Login / Register)" as P1 #FDFEFE
+    usecase "P2\nUser Management\n(CRUD / Role assign)" as P2 #FDFEFE
+    usecase "P3\nMenu Management\n(Dishes / Ingredients)" as P3 #FDFEFE
+    usecase "P4\nOrder Management\n(Place / Fulfill / Track)" as P4 #FDFEFE
+    usecase "P5\nReporting\n(Reports / Audit Logs)" as P5 #FDFEFE
+
+    database "DS1\nUsers\n(PostgreSQL)" as DS1 #D5F5E3
+    database "DS2\nMenu & Dishes\n(PostgreSQL)" as DS2 #D5F5E3
+    database "DS3\nOrders\n(PostgreSQL)" as DS3 #D5F5E3
+    database "DS4\nReports & Logs\n(Filesystem)" as DS4 #D5F5E3
+}
+
+' --- External to P1 ---
+Client   --> P1 : credentials [HTTPS]
+Employee --> P1 : credentials [HTTPS]
+Admin    --> P1 : credentials [HTTPS]
+
+P1 --> Client   : JWT token
+P1 --> Employee : JWT token
+P1 --> Admin    : JWT token
+P1 <--> DS1     : read/write user data
+
+' --- Admin to P2 ---
+Admin --> P2 : CRUD users / assign roles [HTTPS + JWT]
+P2 <--> DS1 : read/write user data
+
+' --- Client/Admin to P3 ---
+Client --> P3 : browse menu [HTTPS + JWT]
+Admin  --> P3 : manage dishes & ingredients [HTTPS + JWT]
+P3 <--> DS2   : read/write menu data
+
+' --- Client/Employee to P4 ---
+Client   --> P4 : place order [HTTPS + JWT]
+Employee --> P4 : update order status [HTTPS + JWT]
+P4 <--> DS3    : read/write orders
+P4 --> P5      : audit log entry
+
+' --- Admin to P5 ---
+Admin --> P5 : request report [HTTPS + JWT]
+P5   --> DS4 : write reports & logs
+
+@enduml
