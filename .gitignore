@@ -1,3 +1,9 @@
 project/target/
 project/package-lock.json
 *.class
+
+# Secrets — never commit real credentials
+.env
+.env.local
+application-local.properties
+application-prod.properties

@@ -2,6 +2,7 @@ package com.cafeteriamanagement.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -15,13 +16,17 @@ import java.util.function.Function;
 @Component
 public class JwtTokenUtil {
 
-    private static final String SECRET = "cafeteriaManagementSecretKeyThatIsLongEnoughForHS256Algorithm";
-    private static final int JWT_TOKEN_VALIDITY = 7 * 24 * 60 * 60;
+    @Value("${jwt.secret}")
+    private String secret;
 
-    private final SecretKey key;
+    @Value("${jwt.expiration}")
+    private int jwtTokenValidity;
 
-    public JwtTokenUtil() {
-        this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private SecretKey key;
+
+    @PostConstruct
+    private void init() {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String getUsernameFromToken(String token) {
@@ -61,7 +66,7 @@ public class JwtTokenUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+                .setExpiration(new Date(System.currentTimeMillis() + (long) jwtTokenValidity * 1000))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
