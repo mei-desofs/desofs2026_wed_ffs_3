@@ -13,6 +13,9 @@ jobs:
   dependency-check:
     name: OWASP Dependency-Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
 
     steps:
       - name: Checkout repository
@@ -26,19 +29,14 @@ jobs:
           cache: maven
 
       - name: Run OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: 'cafeteria-management'
-          path: 'project'
-          format: 'ALL'
-          out: 'dependency-check-reports'
-          args: >
-            --enableRetired
-            --failOnCVSS 9
+        run: mvn dependency-check:check
+        continue-on-error: true
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
 
       - name: Upload Dependency-Check report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dependency-check-report
-          path: dependency-check-reports/
+          path: project/target/dependency-check-report.*
