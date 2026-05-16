@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cafeteriadb
+      POSTGRES_USER: cafeteria
+      POSTGRES_PASSWORD: cafeteria_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafeteria -d cafeteriadb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: ./project
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cafeteriadb
+      SPRING_DATASOURCE_USERNAME: cafeteria
+      SPRING_DATASOURCE_PASSWORD: cafeteria_pass
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production-must-be-at-least-32chars!!}
+      APP_FILESYSTEM_BASE_DIR: /app/files
+    volumes:
+      - app_files:/app/files
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  app_files:
