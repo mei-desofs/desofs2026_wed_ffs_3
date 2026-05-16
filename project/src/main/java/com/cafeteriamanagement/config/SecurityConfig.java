@@ -61,6 +61,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            // CSRF disabled: stateless REST API uses JWT in Authorization header, not cookies
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -97,7 +98,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/files", HttpMethod.DELETE.name())).hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers.frameOptions().sameOrigin());
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
