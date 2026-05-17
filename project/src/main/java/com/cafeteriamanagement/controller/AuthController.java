@@ -4,6 +4,7 @@ import com.cafeteriamanagement.dto.LoginRequestDTO;
 import com.cafeteriamanagement.dto.LoginResponseDTO;
 import com.cafeteriamanagement.model.entity.User;
 import com.cafeteriamanagement.security.JwtTokenUtil;
+import com.cafeteriamanagement.security.SecurityAuditLogger;
 import com.cafeteriamanagement.service.CustomUserDetailsService;
 import com.cafeteriamanagement.service.UserService;
 import jakarta.validation.Valid;
@@ -43,6 +44,9 @@ public class AuthController {
     @Autowired
     private com.cafeteriamanagement.security.SimpleRateLimiter rateLimiter;
 
+    @Autowired
+    private SecurityAuditLogger securityAuditLogger;
+
     @PostMapping("/login")
     @Operation(
         summary = "Authenticate user and issue JWT",
@@ -59,6 +63,7 @@ public class AuthController {
         String ipKey = "login:ip:" + clientIp;
 
         if (rateLimiter.isBlocked(userKey) || rateLimiter.isBlocked(ipKey)) {
+            securityAuditLogger.logAuthenticationBlocked(request, loginRequest.getUsername(), "login rate limit already active");
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
         
@@ -75,15 +80,17 @@ public class AuthController {
             // on successful login reset rate limiter for this user/ip
             rateLimiter.reset(userKey);
             rateLimiter.reset(ipKey);
+            securityAuditLogger.logAuthenticationSuccess(request, user.getUsername());
 
             return ResponseEntity.ok(new LoginResponseDTO(token, user.getUsername(), user.getType().name(), "Login successful"));
         } catch (Exception e) {
-            System.out.println("Login failed for user: " + loginRequest.getUsername() + ", error: " + e.getMessage());
+            securityAuditLogger.logAuthenticationFailure(request, loginRequest.getUsername(), "invalid credentials");
             // record failure against username and IP
             rateLimiter.recordFailure(userKey);
             rateLimiter.recordFailure(ipKey);
 
             if (rateLimiter.isBlocked(userKey) || rateLimiter.isBlocked(ipKey)) {
+                securityAuditLogger.logAuthenticationBlocked(request, loginRequest.getUsername(), "login rate limit triggered");
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
             }
 

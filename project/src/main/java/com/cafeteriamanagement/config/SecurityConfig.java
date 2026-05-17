@@ -1,7 +1,9 @@
 package com.cafeteriamanagement.config;
 
 import com.cafeteriamanagement.security.JwtRequestFilter;
+import com.cafeteriamanagement.security.SecurityAuditLogger;
 import com.cafeteriamanagement.service.CustomUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -34,6 +36,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private SecurityAuditLogger securityAuditLogger;
 
     @Value("${app.security.require-https:true}")
     private boolean requireHttps;
@@ -83,6 +88,16 @@ public class SecurityConfig {
             // CSRF disabled: stateless REST API uses JWT in Authorization header, not cookies
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(exceptions -> exceptions
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    securityAuditLogger.logAccessDenied(request, accessDeniedException);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                })
+                .authenticationEntryPoint((request, response, authException) -> {
+                    securityAuditLogger.logAuthenticationRequired(request, authException);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                })
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()

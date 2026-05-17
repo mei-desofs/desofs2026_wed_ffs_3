@@ -54,7 +54,7 @@
 | V4.1.1 | Access control rules enforced server-side | 🔄 | SDR02 | Enforced at HTTP route level; service-layer `@PreAuthorize` pending Sprint 2 |
 | V4.1.2 | User attributes for access control not user-controlled | ✅ | SDR02 | Role sourced from JWT, never from request body |
 | V4.1.3 | Principle of least privilege | ✅ | SDR15 | File API restricted to ADMIN/EMPLOYEE for writes; CLIENT read-only |
-| V4.1.5 | Access control failures logged | ⬜ | SDR19 | Audit logging not implemented — Sprint 2 |
+| V4.1.5 | Access control failures logged | ✅ | SDR19 | Spring Security and purchase ownership denials are logged via `SECURITY_AUDIT` |
 | V4.3.1 | Admin interfaces use appropriate auth | ✅ | SDR02 | All admin endpoints require `ADMIN` role JWT |
 
 ---
@@ -76,8 +76,8 @@
 |----|-------------|-----------------|-----|-------|
 | V7.1.1 | No sensitive data in logs | 🔄 | SDR16 | Passwords not logged; JWT tokens logged in some debug paths |
 | V7.1.2 | No sensitive data in error messages | ✅ | SDR12 | `GlobalExceptionHandler` returns generic messages; stack traces not exposed |
-| V7.2.1 | Authentication decisions logged | ⬜ | SDR19 | Audit logging not implemented — Sprint 2 |
-| V7.2.2 | Access control failures logged | ⬜ | SDR19 | Sprint 2 |
+| V7.2.1 | Authentication decisions logged | ✅ | SDR19 | Login success, login failure, rate-limit blocks, and rejected JWTs logged via `SECURITY_AUDIT` |
+| V7.2.2 | Access control failures logged | ✅ | SDR19 | Access denied and authentication-required events logged without credentials or tokens |
 | V7.4.1 | Generic message shown on unexpected errors | ✅ | SDR12 | `GlobalExceptionHandler` handles all unhandled exceptions |
 
 ---

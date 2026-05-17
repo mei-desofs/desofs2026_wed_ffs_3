@@ -25,6 +25,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
+    @Autowired
+    private SecurityAuditLogger securityAuditLogger;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -45,9 +48,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
-                System.out.println("Unable to get JWT Token");
+                securityAuditLogger.logTokenAuthenticationFailure(request, "unable to parse JWT");
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token has expired");
+                securityAuditLogger.logTokenAuthenticationFailure(request, "JWT expired");
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String");
@@ -64,6 +67,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 usernamePasswordAuthenticationToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            } else {
+                securityAuditLogger.logTokenAuthenticationFailure(request, "JWT validation failed");
             }
         }
         chain.doFilter(request, response);

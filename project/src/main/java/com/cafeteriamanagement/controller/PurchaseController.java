@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -107,7 +108,7 @@ public class PurchaseController {
         if (!isAdmin) {
             String currentUserExternalId = purchaseService.getUserExternalIdByUsername(currentUsername);
             if (!clientId.equals(currentUserExternalId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                throw new AccessDeniedException("Client attempted to access another user's purchases");
             }
         }
         
@@ -152,7 +153,7 @@ public class PurchaseController {
         }
         
         if (!isAdmin && !currentUsername.equals(purchaseDTO.getClientUsername())) {
-            throw new IllegalArgumentException("Clients can only create purchases for themselves");
+            throw new AccessDeniedException("Client attempted to create a purchase for another user");
         }
         
         PurchaseDTO createdPurchase = purchaseService.createPurchase(purchaseDTO);
@@ -189,7 +190,7 @@ public class PurchaseController {
         }
         
         if (!isAdmin && !currentUsername.equals(existingPurchase.getClientUsername())) {
-            throw new IllegalArgumentException("Clients can only edit their own purchases");
+            throw new AccessDeniedException("Client attempted to edit another user's purchase");
         }
         
         return purchaseService.updatePurchase(id, purchaseDTO)
@@ -222,7 +223,7 @@ public class PurchaseController {
         }
         
         if (!isAdmin && !currentUsername.equals(existingPurchase.getClientUsername())) {
-            throw new IllegalArgumentException("Clients can only delete their own purchases");
+            throw new AccessDeniedException("Client attempted to delete another user's purchase");
         }
         
         if (purchaseService.deletePurchase(id)) {
