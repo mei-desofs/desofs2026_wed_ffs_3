@@ -19,7 +19,7 @@
 | V1.1.1 | Verify use of a secure SDLC | ✅ | SSDLC followed since Phase 1; Sprint 1 adds CI pipeline |
 | V1.1.2 | Verify threat modeling for every design change | ✅ | Threat model reviewed; filesystem API threats covered in Phase 1 STRIDE |
 | V1.1.4 | Verify documentation of all trust boundaries | ✅ | DFD Level 2 (P5-Reporting) added in Phase 1 |
-| V1.2.1 | Verify components use secure communication channels | ⬜ | HTTPS requires reverse proxy — Sprint 2 |
+| V1.2.1 | Verify components use secure communication channels | ✅ | App enforces HTTPS and trusts reverse proxy forwarded protocol headers |
 | V1.2.2 | Verify all components require authentication | ✅ | JWT required on all non-public endpoints |
 
 ---
@@ -96,7 +96,7 @@
 
 | ID | Requirement | Sprint 1 Status | SDR | Notes |
 |----|-------------|-----------------|-----|-------|
-| V9.1.1 | TLS for all client connectivity | ⬜ | SDR10 | Requires reverse proxy (nginx/Traefik) — Sprint 2 |
+| V9.1.1 | TLS for all client connectivity | ✅ | SDR10 | Spring Security requires secure requests; TLS termination must set `X-Forwarded-Proto: https` |
 | V9.1.2 | TLS 1.2 or higher | ⬜ | SDR10 | Pending reverse proxy setup |
 
 ---

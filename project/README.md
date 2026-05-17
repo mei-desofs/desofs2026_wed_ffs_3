@@ -36,15 +36,25 @@ The system uses JWT (JSON Web Token) authentication with role-based access contr
 2. Receive JWT token in response
 3. Include token in `Authorization: Bearer <token>` header for all subsequent requests
 
+## Secure Channel Requirement
+
+HTTPS is required by default. In production, run the application behind a TLS-terminating reverse proxy such as nginx or Traefik and forward requests to the Spring Boot service with `X-Forwarded-Proto: https`.
+
+For local development without a reverse proxy, explicitly disable the requirement:
+
+```bash
+APP_SECURITY_REQUIRE_HTTPS=false mvn spring-boot:run
+```
+
 ## How to Run
 
 1. Install Java 17+ and Maven 3.6+
 2. Clone the repository
 3. In the project directory, run:
 	 ```bash
-	 mvn spring-boot:run
+	 APP_SECURITY_REQUIRE_HTTPS=false mvn spring-boot:run
 	 ```
-4. The app will start at `http://localhost:8080`
+4. The app will start at `http://localhost:8081`
 
 ## How to Test
 
