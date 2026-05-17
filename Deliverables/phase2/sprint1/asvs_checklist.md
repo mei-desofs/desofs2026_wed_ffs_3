@@ -116,7 +116,7 @@
 
 | ID | Requirement | Sprint 1 Status | SDR | Notes |
 |----|-------------|-----------------|-----|-------|
-| V14.2.1 | All components up to date and not using deprecated libraries | ⬜ | SDR22, SDR23 | SCA (OWASP DC) not yet run — Sprint 1 pipeline target |
+| V14.2.1 | All components up to date and not using deprecated libraries | ✅ | SDR22, SDR23 | Dependencies upgraded; OWASP Dependency-Check enforced in CI with CVSS ≥ 7 gate and documented suppressions for latest-line/no-fixed-version findings |
 | V14.2.2 | Remove unnecessary features, documentation, and sample code | 🔄 | — | `PasswordTest.java` in `src/main` to be moved — Sprint 2 |
 | V14.3.2 | Web or application server error handling configured to prevent stack trace disclosure | ✅ | SDR12 | `GlobalExceptionHandler` prevents all stack trace leakage |
 

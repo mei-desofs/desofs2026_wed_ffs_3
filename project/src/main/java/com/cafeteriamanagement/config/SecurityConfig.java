@@ -24,7 +24,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 @Configuration
@@ -59,8 +58,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(customUserDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(customUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -80,10 +78,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        if (requireHttps) {
-            http.requiresChannel(channel -> channel.anyRequest().requiresSecure());
-        }
-
         http
             .authenticationProvider(authenticationProvider())
             // CSRF disabled: stateless REST API uses JWT in Authorization header, not cookies
@@ -100,37 +94,37 @@ public class SecurityConfig {
                 })
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api"), new AntPathRequestMatcher("/api/")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/ingredients/**", HttpMethod.GET.name())).hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/ingredients", HttpMethod.POST.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/ingredients/**", HttpMethod.PUT.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/ingredients/**", HttpMethod.DELETE.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/dishes/**", HttpMethod.GET.name())).hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/dishes", HttpMethod.POST.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/dishes/**", HttpMethod.PUT.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/dishes/**", HttpMethod.DELETE.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/menus/**", HttpMethod.GET.name())).hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/menus", HttpMethod.POST.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/menus/**", HttpMethod.PUT.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/menus/**", HttpMethod.DELETE.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/users/me", HttpMethod.GET.name())).hasAnyRole("ADMIN", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/users/me", HttpMethod.PUT.name())).hasAnyRole("ADMIN", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/users/**", HttpMethod.GET.name())).hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/api/users", HttpMethod.POST.name())).hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/api/users/**", HttpMethod.PUT.name())).hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/api/users/**", HttpMethod.DELETE.name())).hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/api/purchases/**", HttpMethod.GET.name())).hasAnyRole("ADMIN", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/purchases", HttpMethod.POST.name())).hasAnyRole("ADMIN", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/purchases/**", HttpMethod.PUT.name())).hasAnyRole("ADMIN", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/purchases/**", HttpMethod.DELETE.name())).hasAnyRole("ADMIN", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/files/list", HttpMethod.GET.name())).hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/files", HttpMethod.GET.name())).hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
-                .requestMatchers(new AntPathRequestMatcher("/api/files", HttpMethod.POST.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/files/directory", HttpMethod.POST.name())).hasAnyRole("ADMIN", "EMPLOYEE")
-                .requestMatchers(new AntPathRequestMatcher("/api/files", HttpMethod.DELETE.name())).hasRole("ADMIN")
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/api", "/api/").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/ingredients/**").hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
+                .requestMatchers(HttpMethod.POST, "/api/ingredients").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.PUT, "/api/ingredients/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.GET, "/api/dishes/**").hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
+                .requestMatchers(HttpMethod.POST, "/api/dishes").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.PUT, "/api/dishes/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.DELETE, "/api/dishes/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.GET, "/api/menus/**").hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
+                .requestMatchers(HttpMethod.POST, "/api/menus").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.PUT, "/api/menus/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.DELETE, "/api/menus/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.GET, "/api/users/me").hasAnyRole("ADMIN", "CLIENT")
+                .requestMatchers(HttpMethod.PUT, "/api/users/me").hasAnyRole("ADMIN", "CLIENT")
+                .requestMatchers(HttpMethod.GET, "/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/purchases/**").hasAnyRole("ADMIN", "CLIENT")
+                .requestMatchers(HttpMethod.POST, "/api/purchases").hasAnyRole("ADMIN", "CLIENT")
+                .requestMatchers(HttpMethod.PUT, "/api/purchases/**").hasAnyRole("ADMIN", "CLIENT")
+                .requestMatchers(HttpMethod.DELETE, "/api/purchases/**").hasAnyRole("ADMIN", "CLIENT")
+                .requestMatchers(HttpMethod.GET, "/api/files/list").hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
+                .requestMatchers(HttpMethod.GET, "/api/files").hasAnyRole("ADMIN", "EMPLOYEE", "CLIENT")
+                .requestMatchers(HttpMethod.POST, "/api/files").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.POST, "/api/files/directory").hasAnyRole("ADMIN", "EMPLOYEE")
+                .requestMatchers(HttpMethod.DELETE, "/api/files").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .headers(headers -> {
@@ -142,6 +136,9 @@ public class SecurityConfig {
                         .maxAgeInSeconds(31536000));
                 }
             });
+        if (requireHttps) {
+            http.redirectToHttps(Customizer.withDefaults());
+        }
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
