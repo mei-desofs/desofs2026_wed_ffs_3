@@ -28,6 +28,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private SecurityAuditLogger securityAuditLogger;
 
+    @Autowired
+    private TokenBlocklist tokenBlocklist;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -45,6 +48,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
+            if (tokenBlocklist.isBlocked(jwtToken)) {
+                securityAuditLogger.logTokenAuthenticationFailure(request, "token has been revoked");
+                chain.doFilter(request, response);
+                return;
+            }
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {

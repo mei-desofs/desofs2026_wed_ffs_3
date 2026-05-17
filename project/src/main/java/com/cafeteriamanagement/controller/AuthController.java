@@ -5,6 +5,7 @@ import com.cafeteriamanagement.dto.LoginResponseDTO;
 import com.cafeteriamanagement.model.entity.User;
 import com.cafeteriamanagement.security.JwtTokenUtil;
 import com.cafeteriamanagement.security.SecurityAuditLogger;
+import com.cafeteriamanagement.security.TokenBlocklist;
 import com.cafeteriamanagement.service.CustomUserDetailsService;
 import com.cafeteriamanagement.service.UserService;
 import jakarta.validation.Valid;
@@ -22,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -46,6 +49,9 @@ public class AuthController {
 
     @Autowired
     private SecurityAuditLogger securityAuditLogger;
+
+    @Autowired
+    private TokenBlocklist tokenBlocklist;
 
     @PostMapping("/login")
     @Operation(
@@ -96,6 +102,27 @@ public class AuthController {
 
             throw new BadCredentialsException("Invalid credentials");
         }
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Invalidate JWT token", description = "Adds the current token to the server-side blocklist so it cannot be reused.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Logged out successfully"),
+        @ApiResponse(responseCode = "401", description = "No valid token provided")
+    })
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No token provided"));
+        }
+        String token = authHeader.substring(7);
+        try {
+            java.time.Instant expiry = jwtTokenUtil.getExpirationDateFromToken(token).toInstant();
+            tokenBlocklist.block(token, expiry);
+        } catch (Exception e) {
+            // token already expired or invalid — no need to block
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
     private String extractClientIp(HttpServletRequest request) {

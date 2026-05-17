@@ -1,5 +1,7 @@
 package com.cafeteriamanagement.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -11,6 +13,7 @@ import java.security.MessageDigest;
 @Component
 public class HaveIBeenPwnedClient {
 
+    private static final Logger log = LoggerFactory.getLogger(HaveIBeenPwnedClient.class);
     private static final String HIBP_API_PREFIX = "https://api.pwnedpasswords.com/range/";
 
     public boolean isBreached(String password) {
@@ -52,7 +55,7 @@ public class HaveIBeenPwnedClient {
             }
         } catch (Exception e) {
             // On errors, log minimally and allow (fail open). In production, consider fail-closed depending on policy.
-            System.out.println("HIBP check failed: " + e.getMessage());
+            log.warn("HIBP check failed: {}", e.getMessage());
         }
         return false;
     }

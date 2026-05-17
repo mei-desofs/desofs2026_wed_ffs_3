@@ -1,0 +1,10 @@
+.git
+target/
+*.env
+.env*
+.vscode/
+.idea/
+.metals/
+.bloop/
+*.md
+*.log
