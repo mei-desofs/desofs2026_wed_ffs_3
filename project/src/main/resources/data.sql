@@ -50,7 +50,5 @@ INSERT INTO menus (external_id, date, meat_dish_id, fish_dish_id, vegetarian_dis
 ('a2b3c4d5-e6f7-a8b9-c0d1-e2f3a4b5c6d7', '2027-12-02', 5, 4, 6),
 ('b3c4d5e6-f7a8-b9c0-d1e2-f3a4b5c6d7e8', '2027-12-15', 1, 2, 3);
 
--- Insert sample purchases (future dates)
-INSERT INTO purchases (external_id, client_id, dish_id, date) VALUES
-('c4d5e6f7-a8b9-c0d1-e2f3-a4b5c6d7e8f9', 3, 1, '2027-10-05'),
-('d5e6f7a8-b9c0-d1e2-f3a4-b5c6d7e8f9a0', 4, 2, '2027-10-06');
+-- No sample purchases seeded — purchases reference users which are not seeded.
+-- Create users via POST /api/users first, then create purchases via POST /api/purchases.
