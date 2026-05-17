@@ -86,7 +86,7 @@
 
 | ID | Requirement | Sprint 1 Status | SDR | Notes |
 |----|-------------|-----------------|-----|-------|
-| V8.1.1 | Sensitive data not cached | ⬜ | — | `Cache-Control: no-store` not yet set on sensitive endpoints |
+| V8.1.1 | Sensitive data not cached | ✅ | — | Spring Security cache-control headers explicitly enabled (`no-cache, no-store, max-age=0, must-revalidate`) |
 | V8.3.1 | Sensitive data not in URL parameters | ✅ | — | Credentials only in request body (POST) |
 | V8.3.4 | Sensitive data identified | ✅ | — | Identified in Phase 1 `analysis.md` |
 

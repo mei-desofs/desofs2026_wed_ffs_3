@@ -13,6 +13,7 @@ import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -133,6 +134,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .headers(headers -> {
+                headers.cacheControl(Customizer.withDefaults());
                 headers.frameOptions(frameOptions -> frameOptions.sameOrigin());
                 if (requireHttps) {
                     headers.httpStrictTransportSecurity(hsts -> hsts
