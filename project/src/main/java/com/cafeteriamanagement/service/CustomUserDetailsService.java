@@ -24,9 +24,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        System.out.println("DEBUG: Loaded user: " + user.getUsername());
-        System.out.println("DEBUG: Password hash from DB: " + user.getPassword());
-
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getType().name()));
 

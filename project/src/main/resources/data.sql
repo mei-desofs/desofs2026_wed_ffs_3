@@ -40,14 +40,9 @@ INSERT INTO dish_ingredients (dish_id, ingredient_id) VALUES
 -- Veggie Bowl
 (6, 12), (6, 4), (6, 5), (6, 3);
 
--- Insert sample users (passwords are encrypted with BCrypt)
--- All users use password "123": $2a$10$8nja1VB9v4NpQeZfj4ixf.oKoGYLWLhNgQBOa/RkF492bsPcX0G6y
-INSERT INTO users (external_id, username, password, type, balance) VALUES
-('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 'admin', '$2a$10$8nja1VB9v4NpQeZfj4ixf.oKoGYLWLhNgQBOa/RkF492bsPcX0G6y', 'ADMIN', 1000.00),
-('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 'john_employee', '$2a$10$8nja1VB9v4NpQeZfj4ixf.oKoGYLWLhNgQBOa/RkF492bsPcX0G6y', 'EMPLOYEE', NULL),
-('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 'mary_client', '$2a$10$8nja1VB9v4NpQeZfj4ixf.oKoGYLWLhNgQBOa/RkF492bsPcX0G6y', 'CLIENT', 50.00),
-('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a', 'peter_client', '$2a$10$8nja1VB9v4NpQeZfj4ixf.oKoGYLWLhNgQBOa/RkF492bsPcX0G6y', 'CLIENT', 75.00),
-('5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b', 'susan_employee', '$2a$10$8nja1VB9v4NpQeZfj4ixf.oKoGYLWLhNgQBOa/RkF492bsPcX0G6y', 'EMPLOYEE', NULL);
+-- No default user accounts are seeded.
+-- All accounts must be created explicitly via the admin API (POST /api/users).
+-- See ASVS V6.3.2: applications must not ship with default credentials.
 
 -- Insert sample menus (future dates)
 INSERT INTO menus (external_id, date, meat_dish_id, fish_dish_id, vegetarian_dish_id) VALUES

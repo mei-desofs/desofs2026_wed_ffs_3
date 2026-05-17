@@ -3,10 +3,15 @@ package com.cafeteriamanagement.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public class FileWriteRequestDTO {
 
     @NotBlank(message = "Path is required")
+    @Pattern(
+        regexp = "^([a-zA-Z0-9_\\-]+/)*[a-zA-Z0-9_\\-]+\\.[a-zA-Z0-9]{1,10}$",
+        message = "Path must be a relative path with safe characters only (no .. or absolute paths)"
+    )
     @Schema(description = "Relative path of the file to write", example = "menus/daily-menu.txt")
     private String path;
 
