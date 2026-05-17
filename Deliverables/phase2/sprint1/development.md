@@ -217,14 +217,15 @@ All changes in Sprint 1 are submitted via Pull Requests on the `main` branch. Ea
 
 ## 5. Known Remaining Issues (Backlog)
 
-| # | Issue | Severity | Planned for |
-|---|-------|----------|-------------|
-| 1 | **`CustomUserDetailsService.java`** — `System.out.println` debug statements logging BCrypt hash removed | ✅ Fixed | Sprint 1 |
-| 2 | **`@CrossOrigin(origins = "*")`** on all 7 controllers — allows any origin to call the API; no CORS allowlist configured | 🟠 Medium | Sprint 2 |
-| 3 | **`TokenBlocklist`** exists but is never wired into `JwtRequestFilter` — logout/revocation is non-functional | 🟠 Medium | Sprint 2 |
-| 4 | **`PasswordUtil.java`, `PasswordTest.java`, `HashGenerator.java`** in `src/main/java/util` — debug utilities with hardcoded plaintext passwords should not be in production code | 🟡 Low | Sprint 2 |
-| 5 | Role checks only at HTTP route level — `@PreAuthorize` at service layer not yet implemented | 🟡 Low | Sprint 2 |
-| 6 | No audit logging for file operations (read, write, delete) | 🟡 Low | Sprint 2 |
-| 7 | `spring.jpa.show-sql=true` in main `application.properties` — SQL queries logged in production | 🟡 Low | Sprint 2 |
-| 8 | JWT uses HS256 (symmetric) — design specified RS256 (asymmetric) | 🟢 Low | Sprint 2 |
-| 9 | Rate limiting only on login — no limit on registration, file operations, or purchase endpoints | 🟡 Low | Sprint 2 |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | **`CustomUserDetailsService.java`** — `System.out.println` debug statements logging BCrypt hash | ✅ Fixed Sprint 1 | Removed (commit `a4876fd`) |
+| 2 | **`TokenBlocklist`** not wired into `JwtRequestFilter` — logout non-functional | ✅ Fixed Sprint 1 | `POST /api/auth/logout` + filter check (commit `a4876fd`) |
+| 3 | **Default credentials** in `data.sql` — 5 accounts with password "123" seeded in prod | ✅ Fixed Sprint 1 | Removed (commit `a4876fd`) |
+| 4 | **`spring.jpa.show-sql=true`** in main `application.properties` — SQL queries logged in production | ✅ Fixed Sprint 1 | Set to `false` |
+| 5 | **`@CrossOrigin(origins = "*")`** on all 7 controllers — no CORS allowlist | 🟠 Medium | Sprint 2 |
+| 6 | **`PasswordUtil.java`, `PasswordTest.java`, `HashGenerator.java`** in `src/main/java/util` — debug utilities with hardcoded passwords in production code | 🟡 Low | Sprint 2 |
+| 7 | Role checks only at HTTP route level — `@PreAuthorize` at service layer not yet implemented | 🟡 Low | Sprint 2 |
+| 8 | No audit logging for file operations (read, write, delete) | 🟡 Low | Sprint 2 |
+| 9 | JWT uses HS256 (symmetric) — design specified RS256 (asymmetric) | 🟠 Medium | Sprint 2 |
+| 10 | Rate limiting only on login — no limit on file operations or purchase endpoints | 🟡 Low | Sprint 2 |

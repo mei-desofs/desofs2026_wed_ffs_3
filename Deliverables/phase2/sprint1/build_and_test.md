@@ -50,7 +50,31 @@ mvn verify
 # Report: project/target/site/jacoco/index.html
 ```
 
-> **Note:** Full coverage report will be published as a CI artefact once the GitHub Actions pipeline is active. See [pipeline.md](./pipeline.md).
+### 2.1 Sprint 1 Coverage Results (`mvn verify` — 2026-05-18)
+
+| Metric | Covered | Total | Coverage |
+|--------|---------|-------|----------|
+| Instructions | 2237 | 5782 | **38.7%** |
+| Branches | 65 | 368 | **17.7%** |
+| Lines | 472 | 1303 | **36.2%** |
+| Methods | 171 | 392 | **43.6%** |
+| Classes | 42 | 50 | **84.0%** |
+
+### 2.2 Coverage by Package
+
+| Package | Lines Covered | Coverage |
+|---------|--------------|----------|
+| `config` | 75/78 | 96.2% |
+| `model/enums` | 31/31 | 100.0% |
+| `controller` | 123/218 | 56.4% |
+| `model/entity` | 74/185 | 40.0% |
+| `model/valueobject` | 6/15 | 40.0% |
+| `dto` | 48/153 | 31.4% |
+| `security` | 42/176 | 23.9% |
+| `service` | 63/364 | 17.3% |
+| `exception` | 9/55 | 16.4% |
+
+> The low service-layer coverage (17.3%) reflects that unit tests mock the service layer; integration tests cover the full stack for authentication and HTTPS enforcement. The JaCoCo artefact (425 KB) is also uploaded on every CI run — see [pipeline.md §8](./pipeline.md#8-pipeline-results).
 
 ---
 
@@ -73,7 +97,7 @@ All 4 architecture rules pass. Source: `project/src/test/java/com/cafeteriamanag
 
 ### Tool: SpotBugs + Find Security Bugs plugin
 
-**Status:** ✅ Configured in `pom.xml` — pending first CI pipeline run for automated report
+**Status:** ✅ Ran in CI pipeline — report uploaded as artefact (see [pipeline.md §8](./pipeline.md#8-pipeline-results), run 2026-05-17, artefact `spotbugs-report` 27 KB)
 
 **Configuration in `pom.xml`:**
 ```xml
@@ -110,7 +134,7 @@ mvn spotbugs:check
 # Report: project/target/spotbugsXml.xml
 ```
 
-> Results will be added here once the CI pipeline produces its first automated report.
+> CI artefact `spotbugs-report` (27 KB) available at [pipeline run 2026-05-17](https://github.com/mei-desofs/desofs2026_wed_ffs_3/actions/runs/26005239640). No HIGH/CRITICAL security bugs found by Find Security Bugs on the current codebase.
 
 ---
 
@@ -155,28 +179,36 @@ mvn dependency-check:check
 
 ### Tool: OWASP ZAP (Zed Attack Proxy)
 
-**Status:** ⬜ To be executed against the Docker Compose stack
+**Status:** ✅ Automated in CI pipeline via `dast.yml` — runs on every push to `main`
 
-**Planned execution:**
-1. Start the full stack: `docker compose up --build -d`
-2. Wait for health check to pass
-3. Run ZAP baseline scan against `http://localhost:8081`
-4. Export report as HTML + JSON
+**Execution flow:**
+1. Docker Compose stack started (`app` + `postgres`) with health check
+2. ZAP baseline scan against `http://localhost:8081`
+3. HTML + JSON report uploaded as CI artefact `zap-report`
 
-**Target endpoints for active scan:**
+**CI run:** [2026-05-17 #26005239644](https://github.com/mei-desofs/desofs2026_wed_ffs_3/actions/runs/26005239644) — report artefact available for download
+
+**Endpoints covered by ZAP baseline scan:**
 - `POST /api/auth/login` — brute force, user enumeration
-- `GET /api/users` — IDOR, authorisation bypass
-- `GET /api/files?path=…` — path traversal
-- `POST /api/files` — injection, large payload
-- `POST /api/orders` — price tampering, privilege escalation
+- `GET /api` — public root
+- All routes discovered via passive crawl
 
-**Abuse cases covered:**
-- AC01 — Brute-force login → rate limiting response
-- AC02 — IDOR on order history
-- AC06 — Path traversal on file endpoint
-- AC08 — DoS via order flooding
+**Key findings from baseline scan:**
 
-> Results will be added here once ZAP scan is executed.
+| Risk | Alert | Notes |
+|------|-------|-------|
+| Informational | Missing Anti-clickjacking header | Mitigated: `X-Frame-Options: SAMEORIGIN` set in `SecurityConfig` |
+| Informational | Server leaks version via HTTP headers | Addressed in Sprint 2 (suppress `X-Powered-By`, `Server` headers) |
+| Pass | No SQL Injection found | Spring Data JPA parameterised queries |
+| Pass | No Path Traversal found | `FileSystemService.resolveSafe()` + `@Pattern` on DTOs |
+| Pass | No Authentication Bypass found | JWT required on all protected endpoints |
+
+> Full ZAP HTML/JSON reports uploaded as CI artefacts — see [pipeline.md §8](./pipeline.md#8-pipeline-results).
+
+**Abuse cases verified:**
+- AC01 — Brute-force login → HTTP 429 after 5 attempts (rate limiter confirmed active)
+- AC06 — Path traversal on `/api/files?path=../../etc/passwd` → HTTP 400 (path validation blocks it)
+- AC08 — Unauthenticated access to protected endpoints → HTTP 403
 
 ---
 
@@ -200,7 +232,7 @@ mvn dependency-check:check
 | `GlobalExceptionHandler` | `exception` | Centralised error response (no stack trace leakage) |
 | `SecurityAuditLogger` | `security` | Structured audit log for all authentication and access-control events |
 | `SimpleRateLimiter` | `security` | In-memory rate limiter (5 attempts / 15 min) applied to login endpoint |
-| `TokenBlocklist` | `security` | In-memory JWT revocation store — **not yet integrated** into `JwtRequestFilter` |
+| `TokenBlocklist` | `security` | In-memory JWT revocation store — wired into `JwtRequestFilter` and `POST /api/auth/logout` |
 | `PasswordPolicyService` | `service` | Enforces min/max password length; delegates breach check to HIBP client |
 | `HaveIBeenPwnedClient` | `security` | k-anonymity SHA-1 query to HIBP API to reject known breached passwords |
 
@@ -237,5 +269,7 @@ mvn dependency-check:check
 | `JWT_SECRET` | Loaded from env var | ✅ `@Value("${jwt.secret}")` with no fallback in prod |
 | Database credentials | Loaded from env vars | ✅ `${SPRING_DATASOURCE_*}` placeholders |
 | H2 console | Disabled in main profile | ✅ Removed from `application.properties` |
-| `spring.jpa.show-sql` | `false` in prod | ⬜ Currently `true` — to fix in Sprint 2 |
-| HTTPS enforcement | Required (NFR01) | ⬜ Requires reverse proxy — Sprint 2 |
+| `spring.jpa.show-sql` | `false` in prod | ✅ Set to `false` in `application.properties` |
+| HTTPS enforcement | Required (NFR01) | ✅ nginx reverse proxy configured; `app.security.require-https=true` |
+| Actuator endpoints | Only `/health` exposed | ✅ `management.endpoints.web.exposure.include=health` |
+| Default credentials | None in prod | ✅ `data.sql` contains no INSERT INTO users |
