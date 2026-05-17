@@ -97,7 +97,7 @@
 | ID | Requirement | Sprint 1 Status | SDR | Notes |
 |----|-------------|-----------------|-----|-------|
 | V9.1.1 | TLS for all client connectivity | ✅ | SDR10 | Spring Security requires secure requests; TLS termination must set `X-Forwarded-Proto: https` |
-| V9.1.2 | TLS 1.2 or higher | ⬜ | SDR10 | Pending reverse proxy setup |
+| V9.1.2 | TLS 1.2 or higher | ✅ | SDR10 | nginx reverse proxy configured with `ssl_protocols TLSv1.2 TLSv1.3` |
 
 ---
 

@@ -1,4 +1,16 @@
 services:
+  reverse-proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -17,13 +29,14 @@ services:
 
   app:
     build: ./project
-    ports:
-      - "8081:8081"
+    expose:
+      - "8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cafeteriadb
       SPRING_DATASOURCE_USERNAME: cafeteria
       SPRING_DATASOURCE_PASSWORD: cafeteria_pass
       JWT_SECRET: ${JWT_SECRET:-change-this-in-production-must-be-at-least-32chars!!}
+      APP_SECURITY_REQUIRE_HTTPS: "true"
       APP_FILESYSTEM_BASE_DIR: /app/files
     volumes:
       - app_files:/app/files

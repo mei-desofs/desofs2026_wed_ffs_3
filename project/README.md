@@ -38,7 +38,23 @@ The system uses JWT (JSON Web Token) authentication with role-based access contr
 
 ## Secure Channel Requirement
 
-HTTPS is required by default. In production, run the application behind a TLS-terminating reverse proxy such as nginx or Traefik and forward requests to the Spring Boot service with `X-Forwarded-Proto: https`.
+HTTPS is required by default. The provided Docker Compose stack runs nginx as a TLS-terminating reverse proxy in front of the Spring Boot service. nginx only enables TLS 1.2 and TLS 1.3, redirects plaintext HTTP to HTTPS, and forwards requests with `X-Forwarded-Proto: https`.
+
+Before running the Docker Compose stack, mount or create certificates at:
+
+```text
+deploy/nginx/certs/server.crt
+deploy/nginx/certs/server.key
+```
+
+For local development only, generate a self-signed certificate:
+
+```bash
+openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes \
+  -keyout ../deploy/nginx/certs/server.key \
+  -out ../deploy/nginx/certs/server.crt \
+  -subj "/CN=localhost"
+```
 
 For local development without a reverse proxy, explicitly disable the requirement:
 
