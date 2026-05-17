@@ -38,10 +38,13 @@ jobs:
       - name: Pull ZAP Docker image
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
+      - name: Create ZAP output directory
+        run: mkdir -p zap-output && chmod 777 zap-output
+
       - name: Run ZAP Baseline Scan
         run: |
           docker run --network host \
-            -v $(pwd):/zap/wrk/:rw \
+            -v $(pwd)/zap-output:/zap/wrk/:rw \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:8081 \
@@ -55,9 +58,7 @@ jobs:
         if: always()
         with:
           name: zap-report
-          path: |
-            zap-report.html
-            zap-report.json
+          path: zap-output/
 
       - name: Stop Docker Compose services
         if: always()
