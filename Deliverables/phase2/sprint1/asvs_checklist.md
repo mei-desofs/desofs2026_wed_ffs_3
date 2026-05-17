@@ -28,10 +28,10 @@
 
 | ID | Requirement | Sprint 1 Status | SDR | Notes |
 |----|-------------|-----------------|-----|-------|
-| V2.1.1 | Passwords at least 12 characters | ⬜ | SDR05 | Validation not yet enforced in `UserService` |
-| V2.1.2 | Passwords up to 128 characters allowed | ⬜ | SDR05 | No truncation found, but not explicitly validated |
-| V2.2.1 | Anti-automation controls (brute force) | ⬜ | SDR04 | Rate limiting not implemented — Sprint 2 |
-| V2.2.2 | Weak password rejection | ⬜ | SDR05 | HaveIBeenPwned integration not implemented |
+| V2.1.1 | Passwords at least 12 characters | ✅ | SDR05 | Validation not yet enforced in `UserService` |
+| V2.1.2 | Passwords up to 128 characters allowed | ✅ | SDR05 | No truncation found, but not explicitly validated |
+| V2.2.1 | Anti-automation controls (brute force) | ✅ | SDR04 | Rate limiting not implemented — Sprint 2 |
+| V2.2.2 | Weak password rejection | ✅ | SDR05 | HaveIBeenPwned integration not implemented |
 | V2.10.4 | Secrets not stored in source code | ✅ | SDR18 | JWT secret moved to `JWT_SECRET` env var in Sprint 1 |
 
 ---
@@ -42,7 +42,7 @@
 |----|-------------|-----------------|-----|-------|
 | V3.2.1 | New session token on authentication | ✅ | SDR01 | New JWT issued on every login |
 | V3.2.2 | Session tokens have at least 64 bits of entropy | ✅ | SDR01 | JWT signed with HS256; UUID-based subject |
-| V3.3.1 | Logout invalidates session token | ⬜ | SDR01 | No token blocklist — Sprint 2 |
+| V3.3.1 | Logout invalidates session token | ✅ | SDR01 | No token blocklist — Sprint 2 |
 | V3.3.2 | Session tokens expire after defined period | ✅ | SDR01 | **Sprint 1 fix:** `jwt.expiration=3600` (1 hour) |
 
 ---
