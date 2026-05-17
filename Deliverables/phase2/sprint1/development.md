@@ -133,6 +133,54 @@ application-local.properties
 application-prod.properties
 ```
 
+### 2.6 Rate Limiting on Login
+
+`SimpleRateLimiter` (in-memory `ConcurrentHashMap`) is applied to the `/api/auth/login` endpoint. It tracks failed attempts per **username** and per **IP address** independently.
+
+- Threshold: **5 failed attempts** within a **15-minute sliding window**
+- On breach: HTTP 429 returned with a generic message; no account-specific information leaked
+- Thread-safe: `synchronized` methods; expired entries cleaned on each check
+
+**SDR traceability:** SDR04 — *"Implement account lockout or rate limiting after N failed login attempts"*
+
+**Abuse case traceability:** AC01 — Brute-force / credential stuffing attack
+
+### 2.7 Security Audit Logging
+
+`SecurityAuditLogger` writes structured events to a dedicated `SECURITY_AUDIT` SLF4J logger. Every event includes: type, principal/username, authorities, IP, HTTP method, path, and reason.
+
+**Events logged:**
+- Login success / failure / rate-limit block
+- JWT parsing error / expiration / validation failure
+- Access denied (HTTP 403)
+- Authentication required (HTTP 401)
+
+All log entries are sanitised (control characters `\r\n\t` replaced with `_`) to prevent log injection.
+
+**SDR traceability:** SDR19, SDR20
+
+### 2.8 Password Policy and HIBP Integration
+
+`PasswordPolicyService` validates new and updated passwords before they are stored:
+- Minimum **12 characters** (configurable via `app.password.min`)
+- Maximum **128 characters** (configurable via `app.password.max`)
+- Delegates to `HaveIBeenPwnedClient` which uses the **k-anonymity** model: only the first 5 hex characters of the SHA-1 hash are sent to the HIBP API — the full password and hash never leave the application
+
+Fail-open behaviour: if the HIBP API is unreachable (timeout 3 s), the check is skipped and the password is accepted (availability over security in degraded state).
+
+**SDR traceability:** SDR05 — *"Passwords must have a minimum length of 12 characters"*
+
+### 2.9 HTTPS Enforcement and Security Headers
+
+`SecurityConfig` enforces transport security via Spring Security:
+- `app.security.require-https=true` (production default) — all HTTP requests rejected
+- `ForwardedHeaderFilter` at highest precedence — trusts `X-Forwarded-Proto: https` from a reverse proxy
+- HSTS header: `Strict-Transport-Security: max-age=31536000` (1 year) added automatically when HTTPS is active
+- `Cache-Control: no-cache, no-store, max-age=0, must-revalidate` on all responses (Spring Security default)
+- Frame options: `SAMEORIGIN`
+
+**SDR traceability:** SDR10, SDR11
+
 ---
 
 ## 3. Development Best Practices
@@ -140,13 +188,19 @@ application-prod.properties
 | Practice | Status | Evidence |
 |----------|--------|----------|
 | Layered architecture (Controller → Service → Repository) enforced | ✅ | ArchUnit test `controller_dont_access_repos` |
-| No hardcoded credentials in source code | ✅ | Environment variable injection for JWT secret and DB credentials |
-| Parameterised queries via Spring Data JPA / Hibernate ORM | ✅ | All repositories extend `JpaRepository`; no native string-concatenated SQL |
+| No hardcoded credentials in source code | ✅ | JWT secret and DB credentials via env vars |
+| Parameterised queries via Spring Data JPA / Hibernate ORM | ✅ | All repositories extend `JpaRepository`; no string-concatenated SQL |
 | Strict request DTOs (no direct entity binding) | ✅ | All controllers use DTO classes; entities never exposed directly |
-| BCrypt password hashing (cost factor 10) | ✅ | `SecurityConfig.passwordEncoder()` returns `new BCryptPasswordEncoder()` |
+| BCrypt password hashing | ✅ | `SecurityConfig.passwordEncoder()` — `BCryptPasswordEncoder` |
+| Password policy (length + breach check) | ✅ | `PasswordPolicyService` + `HaveIBeenPwnedClient` |
 | RBAC enforced at route level | ✅ | `SecurityConfig.filterChain()` — per-method role restrictions |
 | Generic error messages on authentication failure | ✅ | `AuthController` always throws `BadCredentialsException("Invalid credentials")` |
+| Rate limiting on login | ✅ | `SimpleRateLimiter` — 5 attempts / 15 min per username and IP |
+| Structured security audit log | ✅ | `SecurityAuditLogger` — all auth and access-control events |
+| HTTPS enforcement with HSTS | ✅ | `SecurityConfig` + `ForwardedHeaderFilter` |
 | Persistent volumes for data | ✅ | Docker Compose named volumes for DB and file storage |
+| CVE gate in CI (CVSS ≥ 7 fails build) | ✅ | OWASP Dependency-Check configured in `pom.xml` |
+| Documented CVE suppressions with expiry | ✅ | `config/dependency-check-suppressions.xml` — expires 2026-06-30 |
 
 ---
 
@@ -163,10 +217,14 @@ All changes in Sprint 1 are submitted via Pull Requests on the `main` branch. Ea
 
 ## 5. Known Remaining Issues (Backlog)
 
-| Issue | Risk | Planned for |
-|-------|------|-------------|
-| Role checks only at HTTP route level — not duplicated at service layer (`@PreAuthorize`) | Medium | Sprint 2 |
-| No rate limiting on authentication endpoints | High | Sprint 2 |
-| No audit logging (login events, privileged actions) | High | Sprint 2 |
-| `PasswordTest.java` utility class in `src/main` (should be in `src/test`) | Low | Sprint 2 |
-| JWT uses HS256 (symmetric) — design specified RS256 (asymmetric) | Medium | Sprint 2 |
+| # | Issue | Severity | Planned for |
+|---|-------|----------|-------------|
+| 1 | **`CustomUserDetailsService.java`** — `System.out.println` debug statements logging BCrypt hash removed | ✅ Fixed | Sprint 1 |
+| 2 | **`@CrossOrigin(origins = "*")`** on all 7 controllers — allows any origin to call the API; no CORS allowlist configured | 🟠 Medium | Sprint 2 |
+| 3 | **`TokenBlocklist`** exists but is never wired into `JwtRequestFilter` — logout/revocation is non-functional | 🟠 Medium | Sprint 2 |
+| 4 | **`PasswordUtil.java`, `PasswordTest.java`, `HashGenerator.java`** in `src/main/java/util` — debug utilities with hardcoded plaintext passwords should not be in production code | 🟡 Low | Sprint 2 |
+| 5 | Role checks only at HTTP route level — `@PreAuthorize` at service layer not yet implemented | 🟡 Low | Sprint 2 |
+| 6 | No audit logging for file operations (read, write, delete) | 🟡 Low | Sprint 2 |
+| 7 | `spring.jpa.show-sql=true` in main `application.properties` — SQL queries logged in production | 🟡 Low | Sprint 2 |
+| 8 | JWT uses HS256 (symmetric) — design specified RS256 (asymmetric) | 🟢 Low | Sprint 2 |
+| 9 | Rate limiting only on login — no limit on registration, file operations, or purchase endpoints | 🟡 Low | Sprint 2 |

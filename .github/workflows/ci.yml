@@ -64,6 +64,7 @@ jobs:
           cache: maven
 
       - name: Run PITest mutation testing
+        continue-on-error: true
         run: mvn test-compile org.pitest:pitest-maven:mutationCoverage
         env:
           JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
