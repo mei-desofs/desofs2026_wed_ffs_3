@@ -4,18 +4,20 @@
 
 The CI/CD pipeline automates all quality and security gates on every push to the repository. It is implemented with **GitHub Actions** and runs on the `main` branch and on all Pull Requests.
 
-**Status:** ⬜ Pipeline definition in progress — to be committed to `.github/workflows/`
+**Status:** ✅ All five workflows committed to `.github/workflows/`
 
 ---
 
 ## 2. Pipeline Stages
 
-The pipeline is divided into three workflows:
+The pipeline is divided into five workflows:
 
 | Workflow file | Trigger | Stages |
 |--------------|---------|--------|
-| `ci.yml` | Push / PR to `main` | Build → Unit Tests → Coverage → SAST → SCA |
-| `dast.yml` | Push to `main` (after `ci.yml`) | Docker Compose up → ZAP scan → Report |
+| `ci.yml` | Push / PR to `main` | Build → Unit Tests → Coverage (JaCoCo) |
+| `sast.yml` | Push / PR to `main` + weekly schedule | CodeQL analysis + SpotBugs + Find Security Bugs |
+| `sca.yml` | Push / PR to `main` + weekly schedule | OWASP Dependency-Check (CVSS ≥ 7 gate) |
+| `dast.yml` | Push to `main` | Docker Compose up → OWASP ZAP baseline scan → Report |
 | `dependency-review.yml` | Pull Request | Dependency diff review (GitHub native) |
 
 ---
@@ -34,25 +36,14 @@ push / PR
          │
     ▼
 ┌─────────────────┐
-│  2. Test        │  mvn test -B
+│  2. Test        │  mvn verify -B
 │  + Coverage     │  JaCoCo report uploaded as artefact
-└────────┬────────┘
-         │
-    ▼
-┌─────────────────┐
-│  3. SAST        │  mvn spotbugs:check (Find Security Bugs)
-│                 │  Report uploaded as artefact
-└────────┬────────┘
-         │
-    ▼
-┌─────────────────┐
-│  4. SCA         │  mvn dependency-check:check
-│                 │  Fails on CVSS ≥ 7
-│                 │  Report uploaded as artefact
 └─────────────────┘
+
+(SAST and SCA run in parallel via sast.yml and sca.yml)
 ```
 
-### Workflow definition (planned)
+### Workflow definition
 
 ```yaml
 # .github/workflows/ci.yml
@@ -94,117 +85,147 @@ jobs:
         with:
           name: jacoco-report
           path: project/target/site/jacoco/
-
-  sast:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    defaults:
-      run:
-        working-directory: project
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: SAST — SpotBugs + Find Security Bugs
-        run: mvn spotbugs:check -B
-
-      - name: Upload SpotBugs report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: spotbugs-report
-          path: project/target/spotbugsXml.xml
-
-  sca:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    defaults:
-      run:
-        working-directory: project
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: SCA — OWASP Dependency-Check
-        run: mvn dependency-check:check -B
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-
-      - name: Upload Dependency-Check report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: project/target/dependency-check-report.html
 ```
 
 ---
 
-## 4. DAST Workflow (`dast.yml`)
+## 4. SAST Workflow (`sast.yml`)
+
+Runs CodeQL analysis (GitHub's native SAST engine) and SpotBugs with Find Security Bugs plugin. Also scheduled weekly to catch newly disclosed vulnerabilities.
 
 ```yaml
-# .github/workflows/dast.yml
-name: DAST
+# .github/workflows/sast.yml
+name: SAST - Static Analysis
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 8 * * 1'  # every Monday 08:00 UTC
 
 jobs:
-  zap-scan:
+  codeql:
     runs-on: ubuntu-latest
-    needs: ci  # only runs after CI passes
-
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '17', distribution: 'temurin', cache: maven }
+      - uses: github/codeql-action/init@v3
+        with: { languages: java, queries: security-and-quality }
+      - run: mvn compile -f project/pom.xml
+        env: { JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod }
+      - uses: github/codeql-action/analyze@v3
+        with: { category: "/language:java" }
 
-      - name: Start Docker Compose stack
-        run: docker compose up --build -d
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET_TEST }}
-
-      - name: Wait for application to be ready
-        run: |
-          for i in {1..30}; do
-            curl -sf http://localhost:8081/actuator/health && break
-            sleep 5
-          done
-
-      - name: Run OWASP ZAP baseline scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: 'http://localhost:8081'
-          rules_file_name: '.zap/rules.tsv'
-          fail_action: false
-
-      - name: Upload ZAP report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: report_html.html
-
-      - name: Stop stack
+  spotbugs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '17', distribution: 'temurin', cache: maven }
+      - run: mvn compile spotbugs:spotbugs
+        env: { JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod }
+      - uses: actions/upload-artifact@v4
         if: always()
-        run: docker compose down -v
+        with: { name: spotbugs-report, path: project/target/spotbugsXml.xml }
 ```
 
 ---
 
-## 5. Repository Secrets Required
+## 5. SCA Workflow (`sca.yml`)
+
+Runs OWASP Dependency-Check on every push and weekly. Fails the build if any dependency has a CVE with CVSS ≥ 7.
+
+```yaml
+# .github/workflows/sca.yml
+name: SCA - Software Composition Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 8 * * 1'  # every Monday 08:00 UTC
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '17', distribution: 'temurin', cache: maven }
+      - run: mvn dependency-check:check -B
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: dependency-check-report, path: project/target/dependency-check-report.* }
+```
+
+---
+
+## 6. DAST Workflow (`dast.yml`)
+
+Runs on every push to `main` and can be triggered manually via `workflow_dispatch`. Starts the full Docker Compose stack, waits for readiness, then runs the ZAP baseline scan directly via Docker. Reports exported as HTML + JSON artifacts.
+
+```yaml
+# .github/workflows/dast.yml
+name: DAST - Dynamic Analysis (OWASP ZAP)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  zap-scan:
+    name: OWASP ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start application stack with Docker Compose
+        run: docker compose up -d --build
+        env: { JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod }
+      - name: Wait for application to be ready
+        run: |
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/api/ || true)
+            [ "$STATUS" != "000" ] && break
+            sleep 3
+          done
+      - run: docker pull ghcr.io/zaproxy/zaproxy:stable
+      - name: Run ZAP Baseline Scan
+        run: |
+          docker run --network host -v $(pwd):/zap/wrk/:rw \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://localhost:8081 \
+            -r zap-report.html -J zap-report.json -I
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: zap-report, path: "zap-report.html\nzap-report.json" }
+      - name: Stop Docker Compose services
+        if: always()
+        run: docker compose down
+```
+
+---
+
+## 7. Repository Secrets Required
 
 | Secret | Purpose | How to generate |
 |--------|---------|----------------|
@@ -215,7 +236,7 @@ Secrets are configured in **GitHub → Settings → Secrets and variables → Ac
 
 ---
 
-## 6. Pipeline Results
+## 8. Pipeline Results
 
 > This section will be updated with pipeline run links and artefact summaries after the first successful execution.
 
@@ -225,7 +246,7 @@ Secrets are configured in **GitHub → Settings → Secrets and variables → Ac
 
 ---
 
-## 7. Branch Protection Rules
+## 9. Branch Protection Rules
 
 To enforce the pipeline as a gate before merge, the following branch protection rules are configured on `main`:
 

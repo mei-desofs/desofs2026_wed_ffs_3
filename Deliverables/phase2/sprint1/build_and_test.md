@@ -7,7 +7,7 @@ All tests are executed with `mvn test` from `project/`. The test suite uses H2 i
 ### 1.1 Test Execution Summary
 
 ```
-[INFO] Tests run: 64, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 66, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -26,15 +26,18 @@ All tests are executed with `mvn test` from `project/`. The test suite uses H2 i
 | `PurchaseServiceTest` | Unit | 3 | ✅ Pass |
 | `UserServiceTest` | Unit | 3 | ✅ Pass |
 | `AuthenticationIntegrationTest` | Integration | 2 | ✅ Pass |
+| `SecureChannelIntegrationTest` | Integration | 2 | ✅ Pass |
 | `ArchitectureTest` | Architecture | 4 | ✅ Pass |
-| **Total** | | **64** | **✅ Pass** |
+| **Total** | | **66** | **✅ Pass** |
 
 ### 1.3 Security-Relevant Test Cases
 
-| Test | What it verifies | Threat |
-|------|-----------------|--------|
-| `testProtectedEndpointRequiresJwt` | Unauthenticated request to `/api/users` returns HTTP 403 | T12, T18 |
-| `testLoginValidationErrors` | Missing email/password fields return HTTP 400 with field name | T05 |
+| Test | Suite | What it verifies | Threat |
+|------|-------|-----------------|--------|
+| `testProtectedEndpointRequiresJwt` | `AuthenticationIntegrationTest` | Unauthenticated request to `/api/users` returns HTTP 403 | T12, T18 |
+| `testLoginValidationErrors` | `AuthenticationIntegrationTest` | Missing email/password fields return HTTP 400 | T05 |
+| `testHttpsRedirect` | `SecureChannelIntegrationTest` | Plain HTTP request redirected or rejected when HTTPS required | T37 |
+| `testXForwardedProtoHttpsAccepted` | `SecureChannelIntegrationTest` | Request with `X-Forwarded-Proto: https` accepted by security filter | T36 |
 
 ---
 
@@ -70,20 +73,20 @@ All 4 architecture rules pass. Source: `project/src/test/java/com/cafeteriamanag
 
 ### Tool: SpotBugs + Find Security Bugs plugin
 
-**Status:** ⬜ To be integrated in CI pipeline (see [pipeline.md](./pipeline.md))
+**Status:** ✅ Configured in `pom.xml` — pending first CI pipeline run for automated report
 
-**Planned configuration in `pom.xml`:**
+**Configuration in `pom.xml`:**
 ```xml
 <plugin>
     <groupId>com.github.spotbugs</groupId>
     <artifactId>spotbugs-maven-plugin</artifactId>
-    <version>4.8.3.0</version>
+    <version>4.8.3.1</version>
     <configuration>
         <plugins>
             <plugin>
                 <groupId>com.h3xstream.findsecbugs</groupId>
                 <artifactId>findsecbugs-plugin</artifactId>
-                <version>1.13.0</version>
+                <version>1.14.0</version>
             </plugin>
         </plugins>
         <effort>Max</effort>
@@ -100,7 +103,14 @@ All 4 architecture rules pass. Source: `project/src/test/java/com/cafeteriamanag
 - Unsafe deserialization
 - Path traversal vulnerabilities
 
-> Results will be added here once the pipeline produces its first report.
+**Manual run:**
+```bash
+cd project
+mvn spotbugs:check
+# Report: project/target/spotbugsXml.xml
+```
+
+> Results will be added here once the CI pipeline produces its first automated report.
 
 ---
 
@@ -188,12 +198,17 @@ mvn dependency-check:check
 | `JwtRequestFilter` | `security` | Per-request JWT extraction and authentication |
 | `SecurityConfig` | `config` | Spring Security filter chain and RBAC rules |
 | `GlobalExceptionHandler` | `exception` | Centralised error response (no stack trace leakage) |
+| `SecurityAuditLogger` | `security` | Structured audit log for all authentication and access-control events |
+| `SimpleRateLimiter` | `security` | In-memory rate limiter (5 attempts / 15 min) applied to login endpoint |
+| `TokenBlocklist` | `security` | In-memory JWT revocation store — **not yet integrated** into `JwtRequestFilter` |
+| `PasswordPolicyService` | `service` | Enforces min/max password length; delegates breach check to HIBP client |
+| `HaveIBeenPwnedClient` | `security` | k-anonymity SHA-1 query to HIBP API to reject known breached passwords |
 
 ### Runtime Infrastructure
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| Application server | Spring Boot (embedded Tomcat) | 3.1.5 |
+| Application server | Spring Boot (embedded Tomcat) | 3.5.14 |
 | Database | PostgreSQL | 16 |
 | Containerisation | Docker Compose | — |
 | Build tool | Maven | 3.9 |
