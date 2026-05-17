@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.cafeteriamanagement.security.PasswordPolicyService;
+import com.cafeteriamanagement.security.HaveIBeenPwnedClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +20,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordPolicyService passwordPolicyService;
+    private final HaveIBeenPwnedClient hibpClient;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       PasswordPolicyService passwordPolicyService, HaveIBeenPwnedClient hibpClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.passwordPolicyService = passwordPolicyService;
+        this.hibpClient = hibpClient;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -45,6 +52,12 @@ public class UserService {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("Username already exists: " + userDTO.getUsername());
         }
+        // Validate password policy and breached password list
+        passwordPolicyService.validate(userDTO.getPassword());
+        if (hibpClient.isBreached(userDTO.getPassword())) {
+            throw new IllegalArgumentException("Password has been seen in data breaches; choose a different password");
+        }
+
         User user = convertToEntity(userDTO);
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
@@ -56,6 +69,11 @@ public class UserService {
                     if (!user.getUsername().equals(userDTO.getUsername()) && 
                         userRepository.existsByUsername(userDTO.getUsername())) {
                         throw new IllegalArgumentException("Username already exists: " + userDTO.getUsername());
+                    }
+                    // Validate password before updating
+                    passwordPolicyService.validate(userDTO.getPassword());
+                    if (hibpClient.isBreached(userDTO.getPassword())) {
+                        throw new IllegalArgumentException("Password has been seen in data breaches; choose a different password");
                     }
                     String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
                     user.updateDetails(userDTO.getUsername(), encryptedPassword, userDTO.getType(), userDTO.getBalance());

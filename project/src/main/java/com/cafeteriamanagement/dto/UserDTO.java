@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -20,6 +21,7 @@ public class UserDTO {
     private String username;
 
     @NotBlank(message = "Password is required")
+    @Size(min = 12, max = 128, message = "Password must be between 12 and 128 characters")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Schema(description = "Plain text password supplied on create/update", example = "StrongPass!23", accessMode = Schema.AccessMode.WRITE_ONLY)
     private String password;
