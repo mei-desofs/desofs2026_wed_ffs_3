@@ -108,18 +108,22 @@ All 4 architecture rules pass. Source: `project/src/test/java/com/cafeteriamanag
 
 ### Tool: OWASP Dependency-Check
 
-**Status:** ⬜ To be integrated in CI pipeline (see [pipeline.md](./pipeline.md))
+**Status:** ✅ Integrated in CI pipeline (see [pipeline.md](./pipeline.md))
 
-**Planned Maven configuration:**
+**Maven configuration:**
 ```xml
 <plugin>
     <groupId>org.owasp</groupId>
     <artifactId>dependency-check-maven</artifactId>
-    <version>9.0.9</version>
+    <version>12.2.0</version>
     <configuration>
+        <format>ALL</format>
         <failBuildOnCVSS>7</failBuildOnCVSS>
-        <format>HTML</format>
-        <format>JSON</format>
+        <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+        <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+        <suppressionFiles>
+            <suppressionFile>${project.basedir}/config/dependency-check-suppressions.xml</suppressionFile>
+        </suppressionFiles>
     </configuration>
 </plugin>
 ```
@@ -133,7 +137,7 @@ mvn dependency-check:check
 # Report: project/target/dependency-check-report.html
 ```
 
-> Results will be added here once the pipeline produces its first report.
+**Sprint 1 result:** Local SCA verification passed with the CVSS ≥ 7 gate after dependency upgrades and documented time-limited suppressions for latest-line/no-fixed-version findings.
 
 ---
 

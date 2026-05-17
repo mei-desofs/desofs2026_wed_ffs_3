@@ -59,7 +59,7 @@
 | JaCoCo code coverage report | ✅ Done | [build_and_test.md §2](./build_and_test.md#2-code-coverage) |
 | ArchUnit architecture tests | ✅ Done | [build_and_test.md §3](./build_and_test.md#3-architecture-tests) |
 | SAST — SpotBugs + Find Security Bugs | ⬜ Planned | [build_and_test.md §4](./build_and_test.md#4-sast--static-application-security-testing) |
-| SCA — OWASP Dependency-Check | ⬜ Planned | [build_and_test.md §5](./build_and_test.md#5-sca--software-composition-analysis) |
+| SCA — OWASP Dependency-Check | ✅ Implemented | [build_and_test.md §5](./build_and_test.md#5-sca--software-composition-analysis) |
 | DAST — OWASP ZAP | ⬜ Planned | [build_and_test.md §6](./build_and_test.md#6-dast--dynamic-application-security-testing) |
 
 ### Pipeline
