@@ -1,152 +1,93 @@
 # ASVS Checklist – Phase 2 Sprint 1
 
-> Based on OWASP Application Security Verification Standard v4.0.3
-> Status updated at end of Sprint 1 to reflect implemented controls.
-> Phase 1 baseline is in [`../../security_testing.md §3`](../../security_testing.md).
-
-**Status legend:**
-- ✅ Implemented and verified
-- ⬜ Planned — not yet implemented
-- 🔄 Partially implemented
-- N/A — Not applicable to this system
+> **Primary document:** [`Deliverables/ASVS_5_0_Tracker.xlsx`](../../ASVS_5_0_Tracker.xlsx)
+>
+> The OWASP ASVS 5.0 compliance tracker is maintained as an Excel workbook with full traceability between requirements, implementation status, observations, and references to SDRs/FRs. It covers all 345 requirements across 17 chapters (V1–V17).
+>
+> This file provides a human-readable summary of the Sprint 1 findings. For the authoritative status of each requirement, refer to the Excel tracker above.
 
 ---
 
-## V1 – Architecture, Design and Threat Modeling
+## Summary – Sprint 1 ASVS Coverage
 
-| ID | Requirement | Sprint 1 Status | Notes |
-|----|-------------|-----------------|-------|
-| V1.1.1 | Verify use of a secure SDLC | ✅ | SSDLC followed since Phase 1; Sprint 1 adds CI pipeline |
-| V1.1.2 | Verify threat modeling for every design change | ✅ | Threat model reviewed; filesystem API threats covered in Phase 1 STRIDE |
-| V1.1.4 | Verify documentation of all trust boundaries | ✅ | DFD Level 2 (P5-Reporting) added in Phase 1 |
-| V1.2.1 | Verify components use secure communication channels | ✅ | App enforces HTTPS and trusts reverse proxy forwarded protocol headers |
-| V1.2.2 | Verify all components require authentication | ✅ | JWT required on all non-public endpoints |
-
----
-
-## V2 – Authentication
-
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V2.1.1 | Passwords at least 12 characters | ✅ | SDR05 | Validation not yet enforced in `UserService` |
-| V2.1.2 | Passwords up to 128 characters allowed | ✅ | SDR05 | No truncation found, but not explicitly validated |
-| V2.2.1 | Anti-automation controls (brute force) | ✅ | SDR04 | Rate limiting not implemented — Sprint 2 |
-| V2.2.2 | Weak password rejection | ✅ | SDR05 | HaveIBeenPwned integration not implemented |
-| V2.10.4 | Secrets not stored in source code | ✅ | SDR18 | JWT secret moved to `JWT_SECRET` env var in Sprint 1 |
+| Chapter | Compliant | In Progress | Not Applicable | Not Started |
+|---------|-----------|-------------|----------------|-------------|
+| V5 – File Handling | 3 | 0 | 5 | 5 |
+| V6 – Authentication | 7 | 0 | 19 | 21 |
+| V7 – Session Management | 3 | 0 | 2 | 14 |
+| V8 – Authorization | 1 | 1 | 2 | 9 |
+| V9 – Self-contained Tokens | 1 | 2 | 0 | 4 |
+| V12 – Secure Communication | 3 | 0 | 2 | 7 |
+| V13 – Configuration | 3 | 0 | 1 | 17 |
+| V15 – Secure Coding | 3 | 0 | 1 | 17 |
+| V16 – Security Logging | 7 | 0 | 0 | 10 |
 
 ---
 
-## V3 – Session Management
+## Sprint 1 — Key Controls Implemented
 
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V3.2.1 | New session token on authentication | ✅ | SDR01 | New JWT issued on every login |
-| V3.2.2 | Session tokens have at least 64 bits of entropy | ✅ | SDR01 | JWT signed with HS256; UUID-based subject |
-| V3.3.1 | Logout invalidates session token | ✅ | SDR01 | No token blocklist — Sprint 2 |
-| V3.3.2 | Session tokens expire after defined period | ✅ | SDR01 | **Sprint 1 fix:** `jwt.expiration=3600` (1 hour) |
+### V6 – Authentication (7 Compliant)
 
----
+| Req | Description | Implementation |
+|-----|-------------|----------------|
+| V6.2.1 | Passwords ≥ 12 characters | `@Size(min=12)` in `UserDTO` + `LoginRequestDTO`; `PasswordPolicyService` min=12 |
+| V6.2.4 | Breached password rejection | `HaveIBeenPwnedClient` — k-anonymity SHA-1 query to HIBP API |
+| V6.2.8 | Correct password comparison | `BCryptPasswordEncoder.matches()` in `AuthController` |
+| V6.2.9 | No maximum length truncation | `@Size(max=128)` enforced; passwords up to 128 chars accepted |
+| V6.3.1 | Anti-brute-force (rate limiting) | `SimpleRateLimiter`: 5 attempts / 15 min per username and IP |
+| V6.3.2 | No default credentials in production | Default user INSERTs removed from `data.sql` (ASVS V6.3.2) |
+| V6.3.8 | Generic authentication error message | `AuthController` always returns "Invalid credentials" — no user enumeration |
 
-## V4 – Access Control
+### V7 – Session Management (3 Compliant)
 
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V4.1.1 | Access control rules enforced server-side | 🔄 | SDR02 | Enforced at HTTP route level; service-layer `@PreAuthorize` pending Sprint 2 |
-| V4.1.2 | User attributes for access control not user-controlled | ✅ | SDR02 | Role sourced from JWT, never from request body |
-| V4.1.3 | Principle of least privilege | ✅ | SDR15 | File API restricted to ADMIN/EMPLOYEE for writes; CLIENT read-only |
-| V4.1.5 | Access control failures logged | ✅ | SDR19 | Spring Security and purchase ownership denials are logged via `SECURITY_AUDIT` |
-| V4.3.1 | Admin interfaces use appropriate auth | ✅ | SDR02 | All admin endpoints require `ADMIN` role JWT |
+| Req | Description | Implementation |
+|-----|-------------|----------------|
+| V7.3.1 | Absolute session timeout | `jwt.expiration=3600` (1 hour); validated on every request |
+| V7.3.2 | Session timeout documented and enforced | Configured in `application.properties`; checked in `JwtRequestFilter` |
+| V7.4.1 | Logout invalidates token | `POST /api/auth/logout` blocks token in `TokenBlocklist`; `JwtRequestFilter` checks blocklist |
 
----
+### V12 – Secure Communication (3 Compliant)
 
-## V5 – Validation, Sanitization and Encoding
+| Req | Description | Implementation |
+|-----|-------------|----------------|
+| V12.1.1 | TLS enforced | nginx reverse proxy with TLS 1.2+ (`deploy/nginx/conf.d/cafeteria.conf`) |
+| V12.1.2 | Strong cipher suites | `ssl_ciphers` configured in nginx; RC4/3DES excluded |
+| V12.2.1 | HTTP rejected / redirected | nginx port 80 → HTTPS redirect; app internal only |
 
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V5.1.2 | Protection against mass parameter assignment | ✅ | SDR07 | All controllers use explicit DTOs |
-| V5.1.3 | All input validated against allowlist | 🔄 | SDR06 | Bean validation (`@Valid`) on DTOs; file path validated via `resolveSafe()` |
-| V5.3.4 | Database queries use parameterized queries | ✅ | SDR08 | Spring Data JPA / Hibernate — no string-concatenated SQL |
-| V5.3.8 | Protection against OS command injection | ✅ | SDR13 | No OS commands executed; filesystem access via Java NIO only |
+### V13 – Configuration (3 Compliant)
 
----
+| Req | Description | Implementation |
+|-----|-------------|----------------|
+| V13.4.1 | `.dockerignore` excludes `.git` | `project/.dockerignore` created; excludes `.git`, `target/`, `.env*` |
+| V13.4.2 | No stack traces in responses | `GlobalExceptionHandler` returns generic message; full trace logged via SLF4J |
+| V13.4.5 | Actuator endpoints restricted | `management.endpoints.web.exposure.include=health`; `/actuator/**` denied in `SecurityConfig` |
 
-## V7 – Error Handling and Logging
+### V16 – Security Logging and Error Handling (7 Compliant)
 
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V7.1.1 | No sensitive data in logs | 🔄 | SDR16 | Passwords not logged; JWT tokens logged in some debug paths |
-| V7.1.2 | No sensitive data in error messages | ✅ | SDR12 | `GlobalExceptionHandler` returns generic messages; stack traces not exposed |
-| V7.2.1 | Authentication decisions logged | ✅ | SDR19 | Login success, login failure, rate-limit blocks, and rejected JWTs logged via `SECURITY_AUDIT` |
-| V7.2.2 | Access control failures logged | ✅ | SDR19 | Access denied and authentication-required events logged without credentials or tokens |
-| V7.4.1 | Generic message shown on unexpected errors | ✅ | SDR12 | `GlobalExceptionHandler` handles all unhandled exceptions |
-
----
-
-## V8 – Data Protection
-
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V8.1.1 | Sensitive data not cached | ✅ | — | Spring Security cache-control headers explicitly enabled (`no-cache, no-store, max-age=0, must-revalidate`) |
-| V8.3.1 | Sensitive data not in URL parameters | ✅ | — | Credentials only in request body (POST) |
-| V8.3.4 | Sensitive data identified | ✅ | — | Identified in Phase 1 `analysis.md` |
+| Req | Description | Implementation |
+|-----|-------------|----------------|
+| V16.2.5 | No credentials/tokens in logs | Debug `println` removed from `CustomUserDetailsService`; HIBP errors use `log.warn` |
+| V16.3.1 | Authentication events logged | `SecurityAuditLogger`: IP, timestamp, username, method, path on every auth event |
+| V16.3.2 | HTTP 403 events logged | `logAccessDenied()` in `SecurityConfig` and `GlobalExceptionHandler` |
+| V16.4.1 | Log injection prevention | `SecurityAuditLogger.sanitize()` strips `\r\n\t` from all logged values |
+| V16.5.1 | No internal errors in responses | Generic "An unexpected error occurred" — `ex.getMessage()` never exposed |
+| V16.5.3 | Global exception handler | `@RestControllerAdvice GlobalExceptionHandler` handles all exception types |
+| V16.5.4 | Catch-all exception handler | `@ExceptionHandler(Exception.class)` defined in `GlobalExceptionHandler` |
 
 ---
 
-## V9 – Communication Security
+## Traceability: ASVS → SDR → Test
 
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V9.1.1 | TLS for all client connectivity | ✅ | SDR10 | Spring Security requires secure requests; TLS termination must set `X-Forwarded-Proto: https` |
-| V9.1.2 | TLS 1.2 or higher | ✅ | SDR10 | nginx reverse proxy configured with `ssl_protocols TLSv1.2 TLSv1.3` |
-
----
-
-## V12 – Files and Resources
-
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V12.1.1 | Application rejects oversized files | ✅ | SDR14 | **Sprint 1:** Max file size 1 MB enforced in `FileSystemService` |
-| V12.3.1 | User-submitted filenames not used directly | ✅ | SDR13 | `resolveSafe()` normalises and validates all paths before use |
-| V12.3.2 | Filenames validated against allowlist | 🔄 | SDR13 | Path traversal blocked; extension allowlist pending Sprint 2 |
-| V12.3.3 | Protection against path traversal | ✅ | SDR13 | **Sprint 1:** `basePath.resolve().normalize()` + prefix check |
+| ASVS Req | SDR | Automated Test |
+|----------|-----|----------------|
+| V6.3.1 (rate limiting) | SDR04 | `AuthenticationIntegrationTest.testLoginValidationErrors` |
+| V6.3.2 (no default creds) | SDR18 | Verified: `data.sql` contains no INSERT INTO users |
+| V7.3.1 (session timeout) | SDR01 | `AuthenticationIntegrationTest.testProtectedEndpointRequiresJwt` |
+| V7.4.1 (logout) | SDR03 | Manual verification via `POST /api/auth/logout` |
+| V12.2.1 (HTTPS) | SDR10 | `SecureChannelIntegrationTest.redirectsPlainHttpRequestsToHttps` |
+| V13.4.5 (actuator) | SDR18c | Verified: `management.endpoints.web.exposure.include=health` |
+| V16.5.1 (no error leak) | SDR12 | `GlobalExceptionHandler` returns generic message — unit tests cover controller layer |
 
 ---
 
-## V14 – Configuration
-
-| ID | Requirement | Sprint 1 Status | SDR | Notes |
-|----|-------------|-----------------|-----|-------|
-| V14.2.1 | All components up to date and not using deprecated libraries | ✅ | SDR22, SDR23 | Dependencies upgraded; OWASP Dependency-Check enforced in CI with CVSS ≥ 7 gate and documented suppressions for latest-line/no-fixed-version findings |
-| V14.2.2 | Remove unnecessary features, documentation, and sample code | 🔄 | — | `PasswordTest.java` in `src/main` to be moved — Sprint 2 |
-| V14.3.2 | Web or application server error handling configured to prevent stack trace disclosure | ✅ | SDR12 | `GlobalExceptionHandler` prevents all stack trace leakage |
-
----
-
-## Sprint 1 ASVS Progress Summary
-
-| Category | Total items tracked | ✅ Implemented | 🔄 Partial | ⬜ Planned |
-|----------|--------------------|--------------:|----------:|----------:|
-| V1 Architecture | 5 | 3 | 0 | 2 |
-| V2 Authentication | 5 | 1 | 0 | 4 |
-| V3 Session Mgmt | 4 | 3 | 0 | 1 |
-| V4 Access Control | 5 | 3 | 1 | 1 |
-| V5 Validation | 4 | 2 | 2 | 0 |
-| V7 Error / Logging | 5 | 2 | 1 | 2 |
-| V8 Data Protection | 3 | 2 | 0 | 1 |
-| V9 Communication | 2 | 0 | 0 | 2 |
-| V12 Files | 4 | 3 | 1 | 0 |
-| V14 Configuration | 3 | 1 | 1 | 1 |
-| **Total** | **40** | **20** | **6** | **14** |
-
----
-
-## Traceability: ASVS → Security Requirements → Tests
-
-| ASVS | SDR | Test Case | Sprint 1 change |
-|------|-----|-----------|-----------------|
-| V2.10.4 | SDR18 | TC18 | JWT secret env var (Sprint 1) |
-| V3.3.2 | SDR01 | TC22 | JWT expiry 1h (Sprint 1) |
-| V12.1.1 | SDR14 | TC16 | Max file size 1 MB (Sprint 1) |
-| V12.3.3 | SDR13 | TC15 | Path traversal protection (Sprint 1) |
-| V5.3.4 | SDR08 | TC17 | Parameterised queries via JPA (Phase 1 → Sprint 1 verified) |
-| V4.1.2 | SDR02 | TC09, TC10 | Role from JWT only (Phase 1 → Sprint 1 verified) |
+> For the full requirement-by-requirement breakdown, open [`ASVS_5_0_Tracker.xlsx`](../../ASVS_5_0_Tracker.xlsx).
