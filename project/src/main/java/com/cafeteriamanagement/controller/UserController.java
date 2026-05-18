@@ -23,7 +23,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
 @Tag(name = "Users", description = "User management including self-service endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {

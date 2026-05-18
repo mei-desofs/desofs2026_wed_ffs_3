@@ -23,7 +23,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/menus")
-@CrossOrigin(origins = "*")
 @Tag(name = "Menus", description = "Manage daily cafeteria menus")
 @SecurityRequirement(name = "bearerAuth")
 public class MenuController {

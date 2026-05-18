@@ -26,7 +26,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/files")
-@CrossOrigin(origins = "*")
 @Tag(name = "File System", description = "Server-side file and directory operations for cafeteria management")
 @SecurityRequirement(name = "bearerAuth")
 public class FileController {

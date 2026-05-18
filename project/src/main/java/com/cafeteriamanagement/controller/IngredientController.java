@@ -21,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/ingredients")
-@CrossOrigin(origins = "*")
 @Tag(name = "Ingredients", description = "CRUD operations for managing available ingredients")
 @SecurityRequirement(name = "bearerAuth")
 public class IngredientController {

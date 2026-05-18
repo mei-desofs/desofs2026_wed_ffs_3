@@ -25,7 +25,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/purchases")
-@CrossOrigin(origins = "*")
 @Tag(name = "Purchases", description = "Manage cafeteria purchases with balance enforcement")
 @SecurityRequirement(name = "bearerAuth")
 public class PurchaseController {
