@@ -223,7 +223,7 @@ All changes in Sprint 1 are submitted via Pull Requests on the `main` branch. Ea
 | 2 | **`TokenBlocklist`** not wired into `JwtRequestFilter` — logout non-functional | ✅ Fixed Sprint 1 | `POST /api/auth/logout` + filter check (commit `a4876fd`) |
 | 3 | **Default credentials** in `data.sql` — 5 accounts with password "123" seeded in prod | ✅ Fixed Sprint 1 | Removed (commit `a4876fd`) |
 | 4 | **`spring.jpa.show-sql=true`** in main `application.properties` — SQL queries logged in production | ✅ Fixed Sprint 1 | Set to `false` |
-| 5 | **`@CrossOrigin(origins = "*")`** on all 7 controllers — no CORS allowlist | 🟠 Medium | Sprint 2 |
+| 5 | **`@CrossOrigin(origins = "*")`** on all 7 controllers — no CORS allowlist | ✅ Fixed Sprint 1 | Per-controller wildcards removed; centralized `CorsConfigurationSource` with explicit allowlist in `SecurityConfig` (commit `f3903e7`) |
 | 6 | **`PasswordUtil.java`, `PasswordTest.java`, `HashGenerator.java`** in `src/main/java/util` — debug utilities with hardcoded passwords in production code | 🟡 Low | Sprint 2 |
 | 7 | Role checks only at HTTP route level — `@PreAuthorize` at service layer not yet implemented | 🟡 Low | Sprint 2 |
 | 8 | No audit logging for file operations (read, write, delete) | 🟡 Low | Sprint 2 |
