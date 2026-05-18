@@ -7,7 +7,7 @@ All tests are executed with `mvn test` from `project/`. The test suite uses H2 i
 ### 1.1 Test Execution Summary
 
 ```
-[INFO] Tests run: 66, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 90, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -25,19 +25,34 @@ All tests are executed with `mvn test` from `project/`. The test suite uses H2 i
 | `MenuServiceTest` | Unit | 5 | ✅ Pass |
 | `PurchaseServiceTest` | Unit | 3 | ✅ Pass |
 | `UserServiceTest` | Unit | 3 | ✅ Pass |
+| `SimpleRateLimiterTest` | Security unit | 7 | ✅ Pass |
+| `TokenBlocklistTest` | Security unit | 5 | ✅ Pass |
+| `PasswordPolicyServiceTest` | Security unit | 6 | ✅ Pass |
+| `SecurityAuditLoggerTest` | Security unit | 6 | ✅ Pass |
 | `AuthenticationIntegrationTest` | Integration | 2 | ✅ Pass |
 | `SecureChannelIntegrationTest` | Integration | 2 | ✅ Pass |
 | `ArchitectureTest` | Architecture | 4 | ✅ Pass |
-| **Total** | | **66** | **✅ Pass** |
+| **Total** | | **90** | **✅ Pass** |
 
 ### 1.3 Security-Relevant Test Cases
 
-| Test | Suite | What it verifies | Threat |
-|------|-------|-----------------|--------|
-| `testProtectedEndpointRequiresJwt` | `AuthenticationIntegrationTest` | Unauthenticated request to `/api/users` returns HTTP 403 | T12, T18 |
-| `testLoginValidationErrors` | `AuthenticationIntegrationTest` | Missing email/password fields return HTTP 400 | T05 |
-| `testHttpsRedirect` | `SecureChannelIntegrationTest` | Plain HTTP request redirected or rejected when HTTPS required | T37 |
-| `testXForwardedProtoHttpsAccepted` | `SecureChannelIntegrationTest` | Request with `X-Forwarded-Proto: https` accepted by security filter | T36 |
+| Test | Suite | What it verifies | SDR | Threat |
+|------|-------|-----------------|-----|--------|
+| `testProtectedEndpointRequiresJwt` | `AuthenticationIntegrationTest` | Unauthenticated request to `/api/users` returns HTTP 403 | SDR02, SDR03 | T12, T18 |
+| `testLoginValidationErrors` | `AuthenticationIntegrationTest` | Missing email/password fields return HTTP 400 | SDR06 | T05 |
+| `testHttpsRedirect` | `SecureChannelIntegrationTest` | Plain HTTP request redirected or rejected when HTTPS required | SDR10 | T37 |
+| `testXForwardedProtoHttpsAccepted` | `SecureChannelIntegrationTest` | Request with `X-Forwarded-Proto: https` accepted by security filter | SDR10 | T36 |
+| `fifthFailureBlocksKey` | `SimpleRateLimiterTest` | Login rate limiter blocks at 5th failed attempt | SDR04 | T01, AC01 |
+| `resetUnblocksKey` | `SimpleRateLimiterTest` | Successful login resets the counter | SDR04 | T01 |
+| `differentKeysAreTrackedIndependently` | `SimpleRateLimiterTest` | Per-user and per-IP counters are independent | SDR04 | AC08 |
+| `blockedTokenReturnsTrue` | `TokenBlocklistTest` | Token added on logout is rejected on next request | FR03, SDR03a | T07 |
+| `expiredEntryIsNoLongerBlocked` | `TokenBlocklistTest` | Blocklist self-cleans entries past JWT expiry | SDR03 | — |
+| `rejectsPasswordShorterThanMinimum` | `PasswordPolicyServiceTest` | Passwords < 12 chars rejected | SDR05 | — |
+| `rejectsPasswordLongerThanMaximum` | `PasswordPolicyServiceTest` | Passwords > 128 chars rejected (no truncation) | SDR05 | — |
+| `logInjectionAttemptIsSanitised` | `SecurityAuditLoggerTest` | CRLF/tab in usernames stripped before logging | SDR19b | Log forgery |
+| `authenticationSuccessIsLoggedAtInfoLevel` | `SecurityAuditLoggerTest` | Login success produces INFO audit entry | SDR19 | T03 |
+| `authenticationFailureIsLoggedAtWarnLevel` | `SecurityAuditLoggerTest` | Login failure produces WARN audit entry | SDR19 | T03 |
+| `authenticationBlockedIsLoggedAtWarnLevel` | `SecurityAuditLoggerTest` | Rate-limit block produces WARN audit entry | SDR04, SDR19 | T01 |
 
 ---
 

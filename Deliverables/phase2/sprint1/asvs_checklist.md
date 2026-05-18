@@ -76,17 +76,40 @@
 
 ---
 
-## Traceability: ASVS → SDR → Test
+## 3. ASVS to Automated Test Traceability
 
-| ASVS Req | SDR | Automated Test |
-|----------|-----|----------------|
-| V6.3.1 (rate limiting) | SDR04 | `AuthenticationIntegrationTest.testLoginValidationErrors` |
-| V6.3.2 (no default creds) | SDR18 | Verified: `data.sql` contains no INSERT INTO users |
+Each Sprint 1 security control has at least one automated test that runs on every CI pipeline execution. The mapping below links each ASVS / SDR requirement to the concrete test class and method that exercises it; all tests are part of the `mvn verify` invocation in [`ci.yml`](../../../.github/workflows/ci.yml).
+
+### 3.1 New Sprint 1 unit tests
+
+| ASVS Req | SDR / FR | Automated Test |
+|----------|----------|----------------|
+| V6.2.1 (min 12 chars) | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordShorterThanMinimum`, `acceptsPasswordExactlyAtMinimum` |
+| V6.2.9 (no truncation) | SDR05 | `PasswordPolicyServiceTest.acceptsPasswordExactlyAtMaximum`, `rejectsPasswordLongerThanMaximum` |
+| V6.3.1 (anti-automation) | SDR04 | `SimpleRateLimiterTest.fifthFailureBlocksKey`, `additionalFailuresKeepKeyBlocked`, `differentKeysAreTrackedIndependently`, `resetUnblocksKey` |
+| V7.4.1 (logout invalidates token) | FR03, SDR03a | `TokenBlocklistTest.blockedTokenReturnsTrue`, `expiredEntryIsNoLongerBlocked`, `blockingSameTokenTwiceIsIdempotent` |
+| V16.3.1 (authn events logged) | SDR19 | `SecurityAuditLoggerTest.authenticationSuccessIsLoggedAtInfoLevel`, `authenticationFailureIsLoggedAtWarnLevel`, `authenticationBlockedIsLoggedAtWarnLevel`, `tokenAuthenticationFailureUsesBearerTokenPrincipal` |
+| V16.4.1 (log injection prevention) | SDR19b | `SecurityAuditLoggerTest.logInjectionAttemptIsSanitised`, `nullUsernameIsReplacedWithUnknown` |
+
+### 3.2 Existing integration and architecture tests
+
+| ASVS Req | SDR / FR | Automated Test |
+|----------|----------|----------------|
+| V6.3.2 (no default creds) | SDR18 | Verified: `data.sql` contains no `INSERT INTO users` |
 | V7.3.1 (session timeout) | SDR01 | `AuthenticationIntegrationTest.testProtectedEndpointRequiresJwt` |
-| V7.4.1 (logout) | SDR03 | Manual verification via `POST /api/auth/logout` |
-| V12.2.1 (HTTPS) | SDR10 | `SecureChannelIntegrationTest.redirectsPlainHttpRequestsToHttps` |
-| V13.4.5 (actuator) | SDR18c | Verified: `management.endpoints.web.exposure.include=health` |
-| V16.5.1 (no error leak) | SDR12 | `GlobalExceptionHandler` returns generic message — unit tests cover controller layer |
+| V12.2.1 (HTTPS redirect) | SDR10 | `SecureChannelIntegrationTest.testHttpsRedirect` |
+| V12.2.x (X-Forwarded-Proto trust) | SDR10 | `SecureChannelIntegrationTest.testXForwardedProtoHttpsAccepted` |
+| V13.4.5 (actuator restriction) | SDR18c | Verified: `management.endpoints.web.exposure.include=health` |
+| V14.x (layered architecture) | — | `ArchitectureTest.controller_dont_access_repos` and 3 other ArchUnit rules |
+| V16.5.1 (no error leak) | SDR12 | `GlobalExceptionHandler` covered by controller unit tests |
+
+### 3.3 Pipeline-level verification (no unit test but enforced in CI)
+
+| ASVS Req | SDR | Pipeline gate |
+|----------|-----|---------------|
+| V14.2.1 (no known-vulnerable deps) | SDR22 | OWASP Dependency-Check in [`sca.yml`](../../../.github/workflows/sca.yml) — fails build on CVSS ≥ 7 |
+| V5.x (SAST signals on code patterns) | — | CodeQL + SpotBugs/FindSecBugs in [`sast.yml`](../../../.github/workflows/sast.yml) |
+| V14.2 (DAST on running app) | — | OWASP ZAP baseline in [`dast.yml`](../../../.github/workflows/dast.yml) |
 
 ---
 

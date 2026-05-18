@@ -60,12 +60,12 @@
 
 | Item | Status | Document |
 |------|--------|----------|
-| 66 unit + integration tests passing | ✅ Done | [build_and_test.md §1](./build_and_test.md#1-test-results) |
+| 90 unit + integration tests passing | ✅ Done | [build_and_test.md §1](./build_and_test.md#1-test-results) |
 | JaCoCo code coverage report | ✅ Done | [build_and_test.md §2](./build_and_test.md#2-code-coverage) |
 | ArchUnit architecture tests | ✅ Done | [build_and_test.md §3](./build_and_test.md#3-architecture-tests) |
 | SAST — SpotBugs + Find Security Bugs | ✅ Configured in `pom.xml` | [build_and_test.md §4](./build_and_test.md#4-sast--static-application-security-testing) |
 | SCA — OWASP Dependency-Check | ✅ Configured in `pom.xml` | [build_and_test.md §5](./build_and_test.md#5-sca--software-composition-analysis) |
-| DAST — OWASP ZAP | ⬜ Planned | [build_and_test.md §6](./build_and_test.md#6-dast--dynamic-application-security-testing) |
+| DAST — OWASP ZAP | ✅ Done | [build_and_test.md §6](./build_and_test.md#6-dast--dynamic-application-security-testing) |
 
 ### Pipeline
 
@@ -86,7 +86,7 @@
 - [x] Evidence of security fixes applied (JWT, path traversal, password hash debug log removed)
 - [x] SAST configured and gated (SpotBugs + Find Security Bugs in `pom.xml`; automated in CI)
 - [x] SCA configured and gated (OWASP Dependency-Check CVSS ≥ 7; automated in CI)
-- [ ] Code review evidence (PR history)
+- [x] Code review evidence (PR history) — see [development.md §4](./development.md#4-code-review-process)
 
 ### Build and Test (30%)
 - [x] Component inventory documented
@@ -106,4 +106,4 @@
 ### ASVS (15%)
 - [x] ASVS checklist updated with Sprint 1 implementation status
 - [x] Traceability between ASVS items and security requirements (SDRs)
-- [ ] ASVS items verified by automated tests in the pipeline
+- [x] ASVS items verified by automated tests in the pipeline — see [asvs_checklist.md §3](./asvs_checklist.md#3-asvs-to-automated-test-traceability)

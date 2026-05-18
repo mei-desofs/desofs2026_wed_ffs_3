@@ -208,10 +208,44 @@ Fail-open behaviour: if the HIBP API is unreachable (timeout 3 s), the check is 
 
 All changes in Sprint 1 are submitted via Pull Requests on the `main` branch. Each PR requires:
 - At least one peer review before merge
-- All tests passing (`mvn test`)
+- All tests passing (`mvn test`) — enforced by the `build-and-test` workflow in CI
 - No new compiler warnings introduced
+- For security-relevant changes: SAST workflow green (CodeQL + SpotBugs/FindSecBugs) and SCA workflow green (OWASP Dependency-Check)
 
-> PR history is available in the GitHub repository under the **Pull Requests** tab.
+### 4.1 Pull Requests Merged During Sprint 1
+
+| PR | Title | Reviewer | Notes |
+|----|------|----------|-------|
+| [#1](https://github.com/mei-desofs/desofs2026_wed_ffs_3/pull/1) | Initial Phase 1 deliverables and threat model | Team | Phase 1 docs baseline |
+| [#2](https://github.com/mei-desofs/desofs2026_wed_ffs_3/pull/2) | Fix CodeQL findings in `SecurityConfig` | Team | First SAST-driven fix; closed a CodeQL alert raised by the SAST workflow |
+
+### 4.2 Direct-Commit Iteration on `main`
+
+For non-controversial changes (bug fixes, documentation, configuration), small commits land directly on `main` after local test execution. The 17/05 → 18/05 push reflects this pattern:
+
+| Author | Commits (excluding merges) | Areas |
+|--------|---------------------------|-------|
+| Henrique Dias (1201816) | 16 | DAST workflow fixes, centralised CORS allowlist, code-quality and pipeline iterations |
+| Leonardo Costa (1250532) | 10 | ASVS tracker, security controls (rate limiter, blocklist, audit logger, password policy, HIBP), reverse proxy + TLS, deliverable docs |
+| Lourenço Mendes (1201270) | 7 | Security unit tests, documentation consistency fixes, untracking of IDE artefacts |
+| Luís Santos (1250534) | 6 | JWT secret env var loading, PITest stabilisation, pipeline run results, README updates, OWASP Dependency-Check integration |
+| Nuno Oliveira (1210939) | 2 | Deliverable documentation contributions |
+
+Full commit history with diffs is available via `git log --oneline --no-merges` and on the GitHub web UI.
+
+### 4.3 Automated Review Gates
+
+The CI pipeline acts as a non-human reviewer that must pass on every push (see [pipeline.md §2](./pipeline.md#2-pipeline-stages)):
+
+| Gate | Workflow | Hard fail? |
+|------|---------|-----------|
+| Compilation + unit/integration tests | `ci.yml` (`build-and-test` job) | ✅ Yes |
+| Code coverage report (JaCoCo) | `ci.yml` | Reported; no threshold gate |
+| CodeQL static analysis | `sast.yml` | ✅ Yes — alerts block merge |
+| SpotBugs + Find Security Bugs | `sast.yml` | Reported (artefact); developer review required |
+| OWASP Dependency-Check (CVSS ≥ 7) | `sca.yml` | ✅ Yes (suppressions documented and time-boxed) |
+| OWASP ZAP baseline scan | `dast.yml` | Reported; treated as informational baseline |
+| Dependency-review (GitHub native) | `dependency-review.yml` | ✅ Yes on PR — blocks new high-severity advisories |
 
 ---
 
