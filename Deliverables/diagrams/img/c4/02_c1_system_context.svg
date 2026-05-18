@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#333333"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<line x1="270.0" y1="258.5" x2="560.0" y2="330.4" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="324.0" y="273.4" width="182.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="284.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="415.0" dy="0.0">Uses HTTPS REST API</tspan><tspan x="415.0" dy="13.8">JWT bearer token after</tspan><tspan x="415.0" dy="13.8">login</tspan></text>
+<line x1="270.0" y1="388.6" x2="560.0" y2="376.6" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="346.8" y="361.6" width="136.5" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="373.0" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="415.0" dy="0.0">Uses HTTPS REST API</tspan><tspan x="415.0" dy="13.8">role-based</tspan><tspan x="415.0" dy="13.8">operations</tspan></text>
+<line x1="270.0" y1="531.0" x2="560.0" y2="427.2" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="333.8" y="458.1" width="162.5" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="469.5" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="415.0" dy="0.0">Uses HTTPS REST API</tspan><tspan x="415.0" dy="13.8">administration</tspan><tspan x="415.0" dy="13.8">operations</tspan></text>
+<line x1="685.4" y1="440.0" x2="631.0" y2="550.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="580.2" y="474.0" width="156.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="485.4" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="658.2" dy="0.0">Reads/writes domain</tspan><tspan x="658.2" dy="13.8">data</tspan><tspan x="658.2" dy="13.8">JPA / SQL</tspan></text>
+<line x1="763.7" y1="440.0" x2="832.3" y2="550.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="720.0" y="474.0" width="156.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="485.4" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="798.0" dy="0.0">Reads/writes files</tspan><tspan x="798.0" dy="13.8">validated relative</tspan><tspan x="798.0" dy="13.8">paths</tspan></text>
+<line x1="880.0" y1="368.6" x2="1160.0" y2="366.1" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="929.0" y="346.3" width="182.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="357.7" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1020.0" dy="0.0">Checks password SHA-1</tspan><tspan x="1020.0" dy="13.8">prefix</tspan><tspan x="1020.0" dy="13.8">HTTPS k-anonymity lookup</tspan></text>
+<text y="58.0" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#111111" text-anchor="start"><tspan x="72.0" dy="0.0">C1 - System Context: Coffeetaria</tspan><tspan x="72.0" dy="25.0">Secure cafeteria management REST API for clients, employees and</tspan><tspan x="72.0" dy="25.0">administrators.</tspan></text>
+<rect x="80.0" y="190.0" width="190.0" height="90.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="222.8" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="175.0" dy="0.0">Client</tspan><tspan x="175.0" dy="17.5">Browses menus and</tspan><tspan x="175.0" dy="17.5">manages own purchases.</tspan></text>
+<rect x="80.0" y="340.0" width="190.0" height="105.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="371.5" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="175.0" dy="0.0">Employee</tspan><tspan x="175.0" dy="17.5">Manages dishes,</tspan><tspan x="175.0" dy="17.5">ingredients, menus and</tspan><tspan x="175.0" dy="17.5">order fulfilment.</tspan></text>
+<rect x="80.0" y="510.0" width="190.0" height="110.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="535.2" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="175.0" dy="0.0">Admin</tspan><tspan x="175.0" dy="17.5">Administers users,</tspan><tspan x="175.0" dy="17.5">menu data, purchases</tspan><tspan x="175.0" dy="17.5">and filesystem</tspan><tspan x="175.0" dy="17.5">operations.</tspan></text>
+<rect x="410.0" y="130.0" width="610.0" height="590.0" rx="0" ry="0" fill="none" stroke="#666666" stroke-width="2" stroke-dasharray="8 5"/>
+<text y="148.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555" text-anchor="start"><tspan x="422.0" dy="0.0">Coffeetaria Trust Boundary</tspan></text>
+<rect x="560.0" y="300.0" width="320.0" height="140.0" rx="8" ry="8" fill="#1168BD" stroke="#0B4884" stroke-width="2"/>
+<text y="346.0" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#ffffff" text-anchor="middle"><tspan x="720.0" dy="0.0">Coffeetaria</tspan><tspan x="720.0" dy="20.0">Spring Boot REST API</tspan><tspan x="720.0" dy="20.0">JWT-secured cafeteria management</tspan><tspan x="720.0" dy="20.0">system</tspan></text>
+<path d="M 500.0 564.0 C 500.0 546.0, 710.0 546.0, 710.0 564.0 L 710.0 641.0 C 710.0 659.0, 500.0 659.0, 500.0 641.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<ellipse cx="605.0" cy="564.0" rx="105.0" ry="14" fill="none" stroke="#2E6295" stroke-width="2"/>
+<text y="591.1" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle"><tspan x="605.0" dy="0.0">PostgreSQL</tspan><tspan x="605.0" dy="16.2">Users, menus, dishes,</tspan><tspan x="605.0" dy="16.2">ingredients, purchases</tspan></text>
+<path d="M 760.0 568.0 L 839.8 568.0 L 857.8 584.0 L 970.0 584.0 L 970.0 655.0 L 760.0 655.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="591.1" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle"><tspan x="865.0" dy="0.0">Sandboxed File Storage</tspan><tspan x="865.0" dy="16.2">Reports, operational files</tspan><tspan x="865.0" dy="16.2">and audit logs</tspan></text>
+<rect x="1160.0" y="310.0" width="250.0" height="110.0" rx="8" ry="8" fill="#999999" stroke="#6B6B6B" stroke-width="2"/>
+<text y="361.5" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="1285.0" dy="0.0">Have I Been Pwned</tspan><tspan x="1285.0" dy="17.5">Pwned Passwords range API</tspan></text>
+<path d="M 1090.0 560.0 L 1366.0 560.0 L 1390.0 584.0 L 1390.0 690.0 L 1090.0 690.0 Z" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<path d="M 1366.0 560.0 L 1366.0 584.0 L 1390.0 584.0" fill="none" stroke="#D6B656" stroke-width="2"/>
+<text y="578.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="start"><tspan x="1102.0" dy="0.0">Implementation note</tspan><tspan x="1102.0" dy="15.0">Runtime uses Java 17, Spring Boot 3.5.14,</tspan><tspan x="1102.0" dy="15.0">Spring Security, JWT HS256, PostgreSQL 16</tspan><tspan x="1102.0" dy="15.0">and Docker Compose.</tspan></text>
+</svg>

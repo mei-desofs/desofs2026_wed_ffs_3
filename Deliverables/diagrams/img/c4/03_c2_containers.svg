@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1710" height="1050" viewBox="0 0 1710 1050">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#333333"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<line x1="310.0" y1="308.9" x2="470.0" y2="310.9" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="302.2" y="288.9" width="175.5" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="300.3" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="390.0" dy="0.0">HTTPS :443</tspan><tspan x="390.0" dy="13.8">HTTP :80 redirects to</tspan><tspan x="390.0" dy="13.8">HTTPS</tspan></text>
+<line x1="740.0" y1="312.5" x2="860.0" y2="312.5" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="715.5" y="291.5" width="169.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="302.9" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="800.0" dy="0.0">Proxies HTTP to app:8081</tspan><tspan x="800.0" dy="13.8">adds X-Forwarded-*</tspan><tspan x="800.0" dy="13.8">headers</tspan></text>
+<line x1="1008.6" y1="390.0" x2="1006.3" y2="520.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="882.5" y="434.0" width="250.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="452.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1007.5" dy="0.0">JDBC / JPA</tspan><tspan x="1007.5" dy="13.8">jdbc:postgresql://postgres:5432/cafeteriadb</tspan></text>
+<line x1="902.3" y1="390.0" x2="700.9" y2="535.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="723.6" y="441.5" width="156.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="452.9" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="801.6" dy="0.0">java.nio file</tspan><tspan x="801.6" dy="13.8">operations</tspan><tspan x="801.6" dy="13.8">safe path resolution</tspan></text>
+<line x1="1160.0" y1="312.5" x2="1370.0" y2="312.5" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1177.2" y="291.5" width="175.5" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="302.9" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1265.0" dy="0.0">HTTPS GET</tspan><tspan x="1265.0" dy="13.8">password breach range</tspan><tspan x="1265.0" dy="13.8">check</tspan></text>
+<text y="58.0" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#111111" text-anchor="start"><tspan x="72.0" dy="0.0">C2 - Container Diagram: Coffeetaria</tspan><tspan x="72.0" dy="25.0">Runtime containers from Docker Compose and application configuration.</tspan></text>
+<rect x="80.0" y="250.0" width="230.0" height="115.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="277.8" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="195.0" dy="0.0">API Consumers</tspan><tspan x="195.0" dy="17.5">Client, employee and admin</tspan><tspan x="195.0" dy="17.5">users through</tspan><tspan x="195.0" dy="17.5">web/mobile/direct API</tspan><tspan x="195.0" dy="17.5">clients</tspan></text>
+<rect x="390.0" y="140.0" width="860.0" height="690.0" rx="0" ry="0" fill="none" stroke="#666666" stroke-width="2" stroke-dasharray="8 5"/>
+<text y="158.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555" text-anchor="start"><tspan x="402.0" dy="0.0">Docker Compose Runtime</tspan></text>
+<rect x="470.0" y="250.0" width="270.0" height="125.0" rx="8" ry="8" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="291.5" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="605.0" dy="0.0">Reverse Proxy</tspan><tspan x="605.0" dy="17.5">Nginx 1.27 Alpine</tspan><tspan x="605.0" dy="17.5">TLS termination, HTTP to HTTPS</tspan><tspan x="605.0" dy="17.5">redirect, HSTS</tspan></text>
+<rect x="860.0" y="235.0" width="300.0" height="155.0" rx="8" ry="8" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="282.8" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="1010.0" dy="0.0">Application Container</tspan><tspan x="1010.0" dy="17.5">Spring Boot REST API</tspan><tspan x="1010.0" dy="17.5">Java 17 / Spring Boot 3.5.14</tspan><tspan x="1010.0" dy="17.5">Port 8081 exposed only inside</tspan><tspan x="1010.0" dy="17.5">Compose network</tspan></text>
+<path d="M 855.0 534.0 C 855.0 516.0, 1155.0 516.0, 1155.0 534.0 L 1155.0 651.0 C 1155.0 669.0, 855.0 669.0, 855.0 651.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<ellipse cx="1005.0" cy="534.0" rx="150.0" ry="14" fill="none" stroke="#2E6295" stroke-width="2"/>
+<text y="571.5" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="1005.0" dy="0.0">Database Container</tspan><tspan x="1005.0" dy="17.5">PostgreSQL 16 Alpine</tspan><tspan x="1005.0" dy="17.5">Database: cafeteriadb</tspan><tspan x="1005.0" dy="17.5">Volume: postgres_data</tspan></text>
+<path d="M 475.0 553.0 L 570.0 553.0 L 588.0 569.0 L 760.0 569.0 L 760.0 655.0 L 475.0 655.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="565.2" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="617.5" dy="0.0">Application Files Volume</tspan><tspan x="617.5" dy="17.5">Docker volume: app_files</tspan><tspan x="617.5" dy="17.5">Mounted at /app/files</tspan><tspan x="617.5" dy="17.5">Base dir controlled by</tspan><tspan x="617.5" dy="17.5">APP_FILESYSTEM_BASE_DIR</tspan></text>
+<rect x="1370.0" y="250.0" width="260.0" height="125.0" rx="8" ry="8" fill="#999999" stroke="#6B6B6B" stroke-width="2"/>
+<text y="300.2" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="1500.0" dy="0.0">Pwned Passwords API</tspan><tspan x="1500.0" dy="17.5">External HTTPS service</tspan><tspan x="1500.0" dy="17.5">api.pwnedpasswords.com/range/{prefix}</tspan></text>
+<path d="M 80.0 580.0 L 316.0 580.0 L 340.0 604.0 L 340.0 740.0 L 80.0 740.0 Z" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<path d="M 316.0 580.0 L 316.0 604.0 L 340.0 604.0" fill="none" stroke="#D6B656" stroke-width="2"/>
+<text y="598.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="start"><tspan x="92.0" dy="0.0">Container responsibilities</tspan><tspan x="92.0" dy="15.0">Nginx enforces secure channel at the</tspan><tspan x="92.0" dy="15.0">edge. The Spring Boot app remains</tspan><tspan x="92.0" dy="15.0">stateless and validates JWTs per</tspan><tspan x="92.0" dy="15.0">request. PostgreSQL and file storage</tspan><tspan x="92.0" dy="15.0">are private infrastructure</tspan><tspan x="92.0" dy="15.0">containers/volumes.</tspan></text>
+</svg>

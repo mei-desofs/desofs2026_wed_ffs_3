@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1050" viewBox="0 0 1700 1050">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#333333"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<line x1="770.0" y1="294.2" x2="890.0" y2="295.8" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="705.0" y="282.0" width="250.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="292.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="830.0" dy="0.0">adds before</tspan><tspan x="830.0" dy="13.8">UsernamePasswordAuthenticationFilter</tspan></text>
+<line x1="280.0" y1="370.0" x2="280.0" y2="485.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="172.8" y="414.5" width="214.5" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="424.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="280.0" dy="0.0">checks and records login</tspan><tspan x="280.0" dy="13.8">attempts</tspan></text>
+<line x1="384.9" y1="370.0" x2="552.7" y2="470.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="397.3" y="407.0" width="143.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="417.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="468.8" dy="0.0">loads user</tspan><tspan x="468.8" dy="13.8">credentials</tspan></text>
+<line x1="400.0" y1="341.8" x2="890.0" y2="481.8" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="585.0" y="398.8" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="415.9" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="645.0" dy="0.0">generates token</tspan></text>
+<line x1="392.0" y1="370.0" x2="920.9" y2="665.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="585.0" y="504.5" width="143.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="514.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="656.5" dy="0.0">blocks token on</tspan><tspan x="656.5" dy="13.8">logout</tspan></text>
+<line x1="897.1" y1="370.0" x2="734.5" y2="470.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="755.8" y="407.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="417.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="815.8" dy="0.0">loads user</tspan><tspan x="815.8" dy="13.8">details</tspan></text>
+<line x1="1015.0" y1="370.0" x2="1015.0" y2="455.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="937.0" y="399.5" width="156.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="409.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1015.0" dy="0.0">parses and validates</tspan><tspan x="1015.0" dy="13.8">JWT</tspan></text>
+<line x1="1015.0" y1="370.0" x2="1015.0" y2="665.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="950.0" y="504.5" width="130.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="514.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1015.0" dy="0.0">checks revoked</tspan><tspan x="1015.0" dy="13.8">token</tspan></text>
+<line x1="645.0" y1="370.0" x2="645.0" y2="675.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="576.8" y="509.5" width="136.5" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="519.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="645.0" dy="0.0">logs access</tspan><tspan x="645.0" dy="13.8">decisions</tspan></text>
+<line x1="953.3" y1="370.0" x2="693.9" y2="675.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="761.9" y="509.5" width="123.5" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="519.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="823.6" dy="0.0">logs token</tspan><tspan x="823.6" dy="13.8">failures</tspan></text>
+<line x1="1330.0" y1="540.1" x2="400.0" y2="701.7" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="805.0" y="607.9" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="618.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="865.0" dy="0.0">validates</tspan><tspan x="865.0" dy="13.8">password</tspan></text>
+<line x1="1460.0" y1="570.0" x2="1460.0" y2="660.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1395.0" y="602.0" width="130.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="612.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1460.0" dy="0.0">checks breach</tspan><tspan x="1460.0" dy="13.8">status</tspan></text>
+<text y="58.0" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#111111" text-anchor="start"><tspan x="72.0" dy="0.0">C4 - Code Diagram: Authentication and Security</tspan><tspan x="72.0" dy="25.0">Implementation-level view of the classes behind JWT authentication, route protection, logout and</tspan><tspan x="72.0" dy="25.0">audit logging.</tspan></text>
+<rect x="100.0" y="140.0" width="1180.0" height="740.0" rx="0" ry="0" fill="none" stroke="#C7351D" stroke-width="2"/>
+<text y="158.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555" text-anchor="start"><tspan x="112.0" dy="0.0">com.cafeteriamanagement.security + controller/config/service</tspan></text>
+<rect x="160.0" y="245.0" width="240.0" height="125.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="279.9" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="280.0" dy="0.0">AuthController</tspan><tspan x="280.0" dy="16.2">POST /api/auth/login</tspan><tspan x="280.0" dy="16.2">POST /api/auth/logout</tspan><tspan x="280.0" dy="16.2">Coordinates login, rate-limit</tspan><tspan x="280.0" dy="16.2">checks and token blocklisting.</tspan></text>
+<rect x="520.0" y="215.0" width="250.0" height="155.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="264.9" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="645.0" dy="0.0">SecurityConfig</tspan><tspan x="645.0" dy="16.2">SecurityFilterChain</tspan><tspan x="645.0" dy="16.2">Stateless sessions</tspan><tspan x="645.0" dy="16.2">CORS, HSTS, HTTPS redirect</tspan><tspan x="645.0" dy="16.2">Endpoint RBAC rules</tspan></text>
+<rect x="890.0" y="225.0" width="250.0" height="145.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="269.9" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="1015.0" dy="0.0">JwtRequestFilter</tspan><tspan x="1015.0" dy="16.2">OncePerRequestFilter</tspan><tspan x="1015.0" dy="16.2">Extracts Bearer token</tspan><tspan x="1015.0" dy="16.2">Rejects blocklisted tokens</tspan><tspan x="1015.0" dy="16.2">Populates SecurityContext</tspan></text>
+<rect x="160.0" y="485.0" width="240.0" height="105.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="518.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="280.0" dy="0.0">SimpleRateLimiter</tspan><tspan x="280.0" dy="16.2">Tracks failed login attempts by</tspan><tspan x="280.0" dy="16.2">username and IP.</tspan><tspan x="280.0" dy="16.2">5 attempts / 15 minutes.</tspan></text>
+<rect x="520.0" y="470.0" width="250.0" height="110.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="505.5" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="645.0" dy="0.0">CustomUserDetailsService</tspan><tspan x="645.0" dy="16.2">Loads users from UserRepository</tspan><tspan x="645.0" dy="16.2">for Spring Security</tspan><tspan x="645.0" dy="16.2">authentication.</tspan></text>
+<rect x="890.0" y="455.0" width="250.0" height="125.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="489.9" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="1015.0" dy="0.0">JwtTokenUtil</tspan><tspan x="1015.0" dy="16.2">Creates and validates HS256</tspan><tspan x="1015.0" dy="16.2">JWTs.</tspan><tspan x="1015.0" dy="16.2">Claims include subject, role,</tspan><tspan x="1015.0" dy="16.2">issued-at and expiration.</tspan></text>
+<rect x="890.0" y="665.0" width="250.0" height="105.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="698.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="1015.0" dy="0.0">TokenBlocklist</tspan><tspan x="1015.0" dy="16.2">In-memory token revocation map.</tspan><tspan x="1015.0" dy="16.2">Entries expire at JWT expiry</tspan><tspan x="1015.0" dy="16.2">time.</tspan></text>
+<rect x="520.0" y="675.0" width="250.0" height="115.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="704.9" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="645.0" dy="0.0">SecurityAuditLogger</tspan><tspan x="645.0" dy="16.2">Logs authentication</tspan><tspan x="645.0" dy="16.2">success/failure, blocked</tspan><tspan x="645.0" dy="16.2">attempts, token failures and</tspan><tspan x="645.0" dy="16.2">access denied events.</tspan></text>
+<rect x="160.0" y="675.0" width="240.0" height="95.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="711.1" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="280.0" dy="0.0">PasswordPolicyService</tspan><tspan x="280.0" dy="16.2">Validates password strength</tspan><tspan x="280.0" dy="16.2">before user creation/update.</tspan></text>
+<rect x="1330.0" y="660.0" width="260.0" height="120.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="700.5" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="1460.0" dy="0.0">HaveIBeenPwnedClient</tspan><tspan x="1460.0" dy="16.2">Checks SHA-1 password prefix with</tspan><tspan x="1460.0" dy="16.2">Pwned Passwords range API. Fails</tspan><tspan x="1460.0" dy="16.2">open on API errors.</tspan></text>
+<rect x="1330.0" y="465.0" width="260.0" height="105.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="498.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="1460.0" dy="0.0">UserService</tspan><tspan x="1460.0" dy="16.2">Creates/updates users, encodes</tspan><tspan x="1460.0" dy="16.2">passwords and calls password</tspan><tspan x="1460.0" dy="16.2">controls.</tspan></text>
+</svg>

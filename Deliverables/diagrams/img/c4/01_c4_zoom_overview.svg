@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="1250" viewBox="0 0 2300 1250">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#333333"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<line x1="195.0" y1="284.9" x2="250.0" y2="310.8" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="162.5" y="284.9" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="302.0" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="222.5" dy="0.0">HTTPS + JWT</tspan></text>
+<line x1="195.0" y1="350.5" x2="250.0" y2="348.1" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="195.0" y1="412.4" x2="250.0" y2="383.3" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="306.3" y1="385.0" x2="290.1" y2="425.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="346.3" y1="385.0" x2="370.1" y2="425.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="745.0" y1="327.5" x2="790.0" y2="327.5" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="707.5" y="314.5" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="331.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="767.5" dy="0.0">HTTPS</tspan></text>
+<line x1="915.0" y1="329.5" x2="950.0" y2="330.6" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="872.5" y="317.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="334.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="932.5" dy="0.0">app:8081</tspan></text>
+<line x1="1005.2" y1="375.0" x2="996.2" y2="455.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="940.7" y="402.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="419.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1000.7" dy="0.0">JDBC</tspan></text>
+<line x1="957.7" y1="375.0" x2="859.4" y2="455.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="848.6" y="402.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="419.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="908.6" dy="0.0">java.nio</tspan></text>
+<line x1="1330.0" y1="487.4" x2="1370.0" y2="489.4" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="1490.0" y1="489.7" x2="1530.0" y2="487.9" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="1556.3" y1="515.0" x2="1471.7" y2="585.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="1495.0" y1="615.4" x2="1530.0" y2="614.2" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="1495.0" y1="616.3" x2="1650.0" y2="613.4" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="1697.2" y1="640.0" x2="1694.8" y2="665.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<line x1="1929.7" y1="625.0" x2="1927.8" y2="725.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1868.8" y="662.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="679.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1928.8" dy="0.0">issues token</tspan></text>
+<line x1="2082.1" y1="625.0" x2="2042.9" y2="655.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="2002.5" y="627.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="644.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="2062.5" dy="0.0">installs filter</tspan></text>
+<line x1="1996.9" y1="690.0" x2="1950.6" y2="725.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1913.8" y="694.5" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="711.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1973.8" dy="0.0">validates</tspan></text>
+<line x1="2041.2" y1="690.0" x2="2083.8" y2="725.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="2002.5" y="694.5" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="711.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="2062.5" dy="0.0">checks revoked</tspan></text>
+<line x1="395.0" y1="356.0" x2="600.0" y2="387.1" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="437.5" y="358.5" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="375.7" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="497.5" dy="0.0">Zoom in</tspan></text>
+<line x1="1070.0" y1="361.6" x2="1210.0" y2="429.4" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1080.0" y="382.5" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="399.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1140.0" dy="0.0">Zoom in</tspan></text>
+<line x1="1490.0" y1="511.7" x2="1840.0" y2="623.4" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1605.0" y="554.5" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="571.7" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1665.0" dy="0.0">Zoom in</tspan></text>
+<text y="58.0" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#111111" text-anchor="start"><tspan x="72.0" dy="0.0">C4 Model - Coffeetaria Architecture Zoom Map</tspan><tspan x="72.0" dy="30.0">Each level zooms into the highlighted part of the previous diagram.</tspan></text>
+<rect x="70.0" y="160.0" width="390.0" height="330.0" rx="0" ry="0" fill="none" stroke="#7BB84A" stroke-width="2"/>
+
+<rect x="100.0" y="230.0" width="95.0" height="65.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="259.5" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle"><tspan x="147.5" dy="0.0">Client</tspan><tspan x="147.5" dy="15.0">API user</tspan></text>
+<rect x="100.0" y="325.0" width="95.0" height="55.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="357.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle"><tspan x="147.5" dy="0.0">Employee</tspan></text>
+<rect x="100.0" y="410.0" width="95.0" height="55.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="442.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle"><tspan x="147.5" dy="0.0">Admin</tspan></text>
+<rect x="250.0" y="305.0" width="145.0" height="80.0" rx="8" ry="8" fill="#1168BD" stroke="#0B4884" stroke-width="2"/>
+<text y="333.6" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle"><tspan x="322.5" dy="0.0">Coffeetaria</tspan><tspan x="322.5" dy="16.2">Spring Boot REST</tspan><tspan x="322.5" dy="16.2">API</tspan></text>
+<path d="M 235.0 439.0 C 235.0 421.0, 325.0 421.0, 325.0 439.0 L 325.0 461.0 C 325.0 479.0, 235.0 479.0, 235.0 461.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<ellipse cx="280.0" cy="439.0" rx="45.0" ry="14" fill="none" stroke="#2E6295" stroke-width="2"/>
+<text y="454.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle"><tspan x="280.0" dy="0.0">PostgreSQL</tspan></text>
+<path d="M 345.0 443.0 L 375.4 443.0 L 393.4 459.0 L 425.0 459.0 L 425.0 475.0 L 345.0 475.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="454.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle"><tspan x="385.0" dy="0.0">Files</tspan></text>
+<rect x="600.0" y="250.0" width="500.0" height="350.0" rx="0" ry="0" fill="none" stroke="#7BB84A" stroke-width="2"/>
+
+<rect x="625.0" y="300.0" width="120.0" height="55.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="332.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle"><tspan x="685.0" dy="0.0">API Consumers</tspan></text>
+<rect x="790.0" y="295.0" width="125.0" height="65.0" rx="8" ry="8" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="317.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle"><tspan x="852.5" dy="0.0">Nginx</tspan><tspan x="852.5" dy="15.0">TLS reverse</tspan><tspan x="852.5" dy="15.0">proxy</tspan></text>
+<rect x="950.0" y="290.0" width="120.0" height="85.0" rx="8" ry="8" fill="#438DD5" stroke="#F2D64B" stroke-width="2"/>
+<text y="314.5" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle"><tspan x="1010.0" dy="0.0">Spring Boot App</tspan><tspan x="1010.0" dy="15.0">REST API</tspan><tspan x="1010.0" dy="15.0">Security +</tspan><tspan x="1010.0" dy="15.0">services</tspan></text>
+<path d="M 935.0 469.0 C 935.0 451.0, 1050.0 451.0, 1050.0 469.0 L 1050.0 506.0 C 1050.0 524.0, 935.0 524.0, 935.0 506.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<ellipse cx="992.5" cy="469.0" rx="57.5" ry="14" fill="none" stroke="#2E6295" stroke-width="2"/>
+<text y="491.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle"><tspan x="992.5" dy="0.0">PostgreSQL</tspan></text>
+<path d="M 765.0 473.0 L 808.7 473.0 L 826.7 489.0 L 880.0 489.0 L 880.0 515.0 L 765.0 515.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="489.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle"><tspan x="822.5" dy="0.0">app_files</tspan></text>
+<rect x="1210.0" y="400.0" width="560.0" height="330.0" rx="0" ry="0" fill="none" stroke="#F2D64B" stroke-width="2"/>
+
+<rect x="1235.0" y="455.0" width="95.0" height="60.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="482.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle"><tspan x="1282.5" dy="0.0">API</tspan><tspan x="1282.5" dy="13.8">Consumers</tspan></text>
+<rect x="1370.0" y="455.0" width="120.0" height="75.0" rx="8" ry="8" fill="#85BBF0" stroke="#C7351D" stroke-width="2"/>
+<text y="482.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="middle"><tspan x="1430.0" dy="0.0">Security</tspan><tspan x="1430.0" dy="15.0">JWT, RBAC,</tspan><tspan x="1430.0" dy="15.0">audit</tspan></text>
+<rect x="1530.0" y="455.0" width="125.0" height="60.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="489.5" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="middle"><tspan x="1592.5" dy="0.0">Controllers</tspan></text>
+<rect x="1370.0" y="585.0" width="125.0" height="65.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="614.5" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="middle"><tspan x="1432.5" dy="0.0">Services</tspan><tspan x="1432.5" dy="15.0">Use cases</tspan></text>
+<rect x="1530.0" y="585.0" width="100.0" height="55.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="617.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="middle"><tspan x="1580.0" dy="0.0">Domain</tspan></text>
+<rect x="1650.0" y="585.0" width="100.0" height="55.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="617.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="middle"><tspan x="1700.0" dy="0.0">Repositories</tspan></text>
+<path d="M 1650.0 679.0 C 1650.0 661.0, 1735.0 661.0, 1735.0 679.0 L 1735.0 696.0 C 1735.0 714.0, 1650.0 714.0, 1650.0 696.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<ellipse cx="1692.5" cy="679.0" rx="42.5" ry="14" fill="none" stroke="#2E6295" stroke-width="2"/>
+<text y="691.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle"><tspan x="1692.5" dy="0.0">DB</tspan></text>
+<rect x="1840.0" y="545.0" width="370.0" height="275.0" rx="0" ry="0" fill="none" stroke="#C7351D" stroke-width="2"/>
+
+<rect x="1870.0" y="590.0" width="120.0" height="35.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="611.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#111111" text-anchor="middle"><tspan x="1930.0" dy="0.0">AuthController</tspan></text>
+<rect x="2045.0" y="590.0" width="120.0" height="35.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="611.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#111111" text-anchor="middle"><tspan x="2105.0" dy="0.0">SecurityConfig</tspan></text>
+<rect x="1955.0" y="655.0" width="130.0" height="35.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="676.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#111111" text-anchor="middle"><tspan x="2020.0" dy="0.0">JwtRequestFilter</tspan></text>
+<rect x="1870.0" y="725.0" width="115.0" height="35.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="746.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#111111" text-anchor="middle"><tspan x="1927.5" dy="0.0">JwtTokenUtil</tspan></text>
+<rect x="2045.0" y="725.0" width="120.0" height="35.0" rx="0" ry="0" fill="#F8CECC" stroke="#B85450" stroke-width="2"/>
+<text y="746.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#111111" text-anchor="middle"><tspan x="2105.0" dy="0.0">TokenBlocklist</tspan></text>
+<text y="998.0" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#111111" text-anchor="start"><tspan x="142.0" dy="0.0">Level 1</tspan></text>
+<text y="1058.0" font-family="Arial, Helvetica, sans-serif" font-size="48" fill="#111111" text-anchor="start"><tspan x="122.0" dy="0.0">Context</tspan></text>
+<text y="998.0" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#111111" text-anchor="start"><tspan x="732.0" dy="0.0">Level 2</tspan></text>
+<text y="1058.0" font-family="Arial, Helvetica, sans-serif" font-size="48" fill="#111111" text-anchor="start"><tspan x="677.0" dy="0.0">Containers</tspan></text>
+<text y="998.0" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#111111" text-anchor="start"><tspan x="1367.0" dy="0.0">Level 3</tspan></text>
+<text y="1058.0" font-family="Arial, Helvetica, sans-serif" font-size="48" fill="#111111" text-anchor="start"><tspan x="1312.0" dy="0.0">Components</tspan></text>
+<text y="998.0" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#111111" text-anchor="start"><tspan x="1912.0" dy="0.0">Level 4</tspan></text>
+<text y="1058.0" font-family="Arial, Helvetica, sans-serif" font-size="48" fill="#111111" text-anchor="start"><tspan x="1897.0" dy="0.0">Code</tspan></text>
+</svg>

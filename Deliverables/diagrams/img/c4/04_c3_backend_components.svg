@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1820" height="1150" viewBox="0 0 1820 1150">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#333333"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<line x1="310.0" y1="284.1" x2="435.0" y2="278.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="284.8" y="260.1" width="175.5" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="271.5" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="372.5" dy="0.0">HTTPS request</tspan><tspan x="372.5" dy="13.8">Authorization: Bearer</tspan><tspan x="372.5" dy="13.8">token</tspan></text>
+<line x1="765.0" y1="270.0" x2="830.0" y2="270.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="716.2" y="249.0" width="162.5" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="260.4" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="797.5" dy="0.0">Authenticates request</tspan><tspan x="797.5" dy="13.8">enforces route-level</tspan><tspan x="797.5" dy="13.8">RBAC</tspan></text>
+<line x1="995.0" y1="340.0" x2="995.0" y2="395.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="917.0" y="354.5" width="156.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="364.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="995.0" dy="0.0">Binds and validates</tspan><tspan x="995.0" dy="13.8">DTOs</tspan></text>
+<line x1="961.1" y1="340.0" x2="840.1" y2="590.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="840.6" y="452.0" width="120.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="469.1" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="900.6" dy="0.0">Calls use cases</tspan></text>
+<line x1="636.6" y1="340.0" x2="767.1" y2="590.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="604.3" y="452.0" width="195.0" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="462.2" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="701.8" dy="0.0">Loads users and logs</tspan><tspan x="701.8" dy="13.8">decisions</tspan></text>
+<line x1="734.2" y1="735.0" x2="661.0" y2="810.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="574.1" y="751.5" width="247.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="762.9" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="697.6" dy="0.0">Enforces business rules</tspan><tspan x="697.6" dy="13.8">balance, dates, dish/menu</tspan><tspan x="697.6" dy="13.8">availability</tspan></text>
+<line x1="870.6" y1="735.0" x2="938.5" y2="810.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="803.8" y="759.5" width="201.5" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="769.8" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="904.5" dy="0.0">Persists and queries</tspan><tspan x="904.5" dy="13.8">aggregates</tspan></text>
+<line x1="1160.0" y1="869.4" x2="1290.0" y2="867.0" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1137.2" y="855.2" width="175.5" height="26.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="865.5" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1225.0" dy="0.0">Spring Data JPA /</tspan><tspan x="1225.0" dy="13.8">Hibernate</tspan></text>
+<line x1="1000.0" y1="665.8" x2="1290.0" y2="670.7" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1060.5" y="647.2" width="169.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="658.6" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1145.0" dy="0.0">FileSystemService</tspan><tspan x="1145.0" dy="13.8">canonical path</tspan><tspan x="1145.0" dy="13.8">containment</tspan></text>
+<line x1="1000.0" y1="649.4" x2="1510.0" y2="615.2" stroke="#333333" stroke-width="2.2" marker-end="url(#arrow)"/>
+<rect x="1183.5" y="611.3" width="143.0" height="42.0" fill="#ffffff" fill-opacity="0.86" stroke="none"/>
+<text y="622.7" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#333333" text-anchor="middle"><tspan x="1255.0" dy="0.0">HaveIBeenPwnedClient</tspan><tspan x="1255.0" dy="13.8">fail-open breach</tspan><tspan x="1255.0" dy="13.8">check</tspan></text>
+<text y="58.0" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#111111" text-anchor="start"><tspan x="72.0" dy="0.0">C3 - Component Diagram: Spring Boot Application</tspan><tspan x="72.0" dy="25.0">Major backend components mapped to packages under com.cafeteriamanagement.</tspan></text>
+<rect x="70.0" y="235.0" width="240.0" height="110.0" rx="8" ry="8" fill="#08427B" stroke="#052E56" stroke-width="2"/>
+<text y="269.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="190.0" dy="0.0">API Consumer</tspan><tspan x="190.0" dy="17.5">Sends HTTPS REST requests</tspan><tspan x="190.0" dy="17.5">with optional JWT bearer</tspan><tspan x="190.0" dy="17.5">token</tspan></text>
+<rect x="370.0" y="125.0" width="1050.0" height="870.0" rx="0" ry="0" fill="none" stroke="#666666" stroke-width="2" stroke-dasharray="8 5"/>
+<text y="143.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555" text-anchor="start"><tspan x="382.0" dy="0.0">Spring Boot Application</tspan></text>
+<rect x="435.0" y="200.0" width="330.0" height="140.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="250.5" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="600.0" dy="0.0">Security Layer</tspan><tspan x="600.0" dy="16.2">SecurityConfig, JwtRequestFilter,</tspan><tspan x="600.0" dy="16.2">JwtTokenUtil, TokenBlocklist,</tspan><tspan x="600.0" dy="16.2">SimpleRateLimiter, SecurityAuditLogger</tspan></text>
+<rect x="830.0" y="200.0" width="330.0" height="140.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="250.5" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="995.0" dy="0.0">REST Controllers</tspan><tspan x="995.0" dy="16.2">Auth, User, Ingredient, Dish, Menu,</tspan><tspan x="995.0" dy="16.2">Purchase, File and API documentation</tspan><tspan x="995.0" dy="16.2">controllers</tspan></text>
+<rect x="830.0" y="395.0" width="330.0" height="125.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="438.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="995.0" dy="0.0">DTOs and Validation</tspan><tspan x="995.0" dy="16.2">Request/response DTOs with Jakarta</tspan><tspan x="995.0" dy="16.2">validation constraints and global exception</tspan><tspan x="995.0" dy="16.2">handling</tspan></text>
+<rect x="610.0" y="590.0" width="390.0" height="145.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="643.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="805.0" dy="0.0">Application Services</tspan><tspan x="805.0" dy="16.2">UserService, DishService, IngredientService,</tspan><tspan x="805.0" dy="16.2">MenuService, PurchaseService, FileSystemService,</tspan><tspan x="805.0" dy="16.2">CustomUserDetailsService</tspan></text>
+<rect x="435.0" y="810.0" width="330.0" height="125.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="853.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="600.0" dy="0.0">Domain Model</tspan><tspan x="600.0" dy="16.2">Entities and value objects: User,</tspan><tspan x="600.0" dy="16.2">Ingredient, Dish, Menu, Purchase, Name,</tspan><tspan x="600.0" dy="16.2">enums</tspan></text>
+<rect x="830.0" y="810.0" width="330.0" height="125.0" rx="8" ry="8" fill="#85BBF0" stroke="#4D86B8" stroke-width="2"/>
+<text y="853.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#111111" text-anchor="middle"><tspan x="995.0" dy="0.0">JPA Repositories</tspan><tspan x="995.0" dy="16.2">UserRepository, IngredientRepository,</tspan><tspan x="995.0" dy="16.2">DishRepository, MenuRepository,</tspan><tspan x="995.0" dy="16.2">PurchaseRepository</tspan></text>
+<rect x="1510.0" y="555.0" width="230.0" height="105.0" rx="8" ry="8" fill="#999999" stroke="#6B6B6B" stroke-width="2"/>
+<text y="595.2" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle"><tspan x="1625.0" dy="0.0">HIBP Range API</tspan><tspan x="1625.0" dy="17.5">External password breach</tspan><tspan x="1625.0" dy="17.5">check</tspan></text>
+<path d="M 1290.0 819.0 C 1290.0 801.0, 1510.0 801.0, 1510.0 819.0 L 1510.0 911.0 C 1510.0 929.0, 1290.0 929.0, 1290.0 911.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<ellipse cx="1400.0" cy="819.0" rx="110.0" ry="14" fill="none" stroke="#2E6295" stroke-width="2"/>
+<text y="861.8" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle"><tspan x="1400.0" dy="0.0">PostgreSQL</tspan><tspan x="1400.0" dy="16.2">Relational domain data</tspan></text>
+<path d="M 1290.0 638.0 L 1373.6 638.0 L 1391.6 654.0 L 1510.0 654.0 L 1510.0 725.0 L 1290.0 725.0 Z" fill="#438DD5" stroke="#2E6295" stroke-width="2"/>
+<text y="661.1" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle"><tspan x="1400.0" dy="0.0">Filesystem Base Directory</tspan><tspan x="1400.0" dy="16.2">/app/files or configured</tspan><tspan x="1400.0" dy="16.2">base dir</tspan></text>
+<path d="M 70.0 735.0 L 296.0 735.0 L 320.0 759.0 L 320.0 880.0 L 70.0 880.0 Z" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<path d="M 296.0 735.0 L 296.0 759.0 L 320.0 759.0" fill="none" stroke="#D6B656" stroke-width="2"/>
+<text y="753.0" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#111111" text-anchor="start"><tspan x="82.0" dy="0.0">Architectural rule</tspan><tspan x="82.0" dy="15.0">ArchUnit tests enforce public</tspan><tspan x="82.0" dy="15.0">controllers/services/repositories</tspan><tspan x="82.0" dy="15.0">and prevent controllers from</tspan><tspan x="82.0" dy="15.0">depending directly on repositories.</tspan></text>
+</svg>
