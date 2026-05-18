@@ -7,3 +7,14 @@ project/package-lock.json
 .env.local
 application-local.properties
 application-prod.properties
+
+# IDE / build server artefacts (Metals, Bloop)
+.metals/
+.bloop/
+project/.bloop/
+*.mv.db
+
+# Self-signed TLS certs for local dev — never commit
+deploy/nginx/certs/*.crt
+deploy/nginx/certs/*.key
+!deploy/nginx/certs/.gitkeep
