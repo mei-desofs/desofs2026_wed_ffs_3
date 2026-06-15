@@ -7,6 +7,7 @@ import com.cafeteriamanagement.model.entity.Purchase;
 import com.cafeteriamanagement.model.entity.User;
 import com.cafeteriamanagement.model.valueobject.Name;
 import com.cafeteriamanagement.repository.PurchaseRepository;
+import com.cafeteriamanagement.security.SecurityAuditLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -32,6 +33,8 @@ class PurchaseServiceTest {
     private DishService dishService;
     @Mock
     private MenuService menuService;
+    @Mock
+    private SecurityAuditLogger securityAuditLogger;
 
     @InjectMocks
     private PurchaseService purchaseService;

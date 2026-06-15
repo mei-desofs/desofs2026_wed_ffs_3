@@ -1,5 +1,6 @@
 package com.cafeteriamanagement.service;
 
+import com.cafeteriamanagement.security.SecurityAuditLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,7 +22,7 @@ class FileSystemServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new FileSystemService(tempDir.toString());
+        service = new FileSystemService(tempDir.toString(), new SecurityAuditLogger());
     }
 
     @Test
