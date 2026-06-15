@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 @Component
@@ -19,7 +20,7 @@ public class HaveIBeenPwnedClient {
     public boolean isBreached(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] digest = md.digest(password.getBytes("UTF-8"));
+            byte[] digest = md.digest(password.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (byte b : digest) {
                 sb.append(String.format("%02X", b));
@@ -41,13 +42,15 @@ public class HaveIBeenPwnedClient {
                 return false;
             }
 
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     String[] parts = line.split(":");
                     if (parts.length >= 2) {
                         String returnedSuffix = parts[0].trim();
-                        if (returnedSuffix.equalsIgnoreCase(suffix)) {
+                        // HIBP returns the suffix as upper-case hex; our suffix is also
+                        // built with %02X (upper-case), so a direct equals() is correct.
+                        if (returnedSuffix.equals(suffix)) {
                             return true;
                         }
                     }

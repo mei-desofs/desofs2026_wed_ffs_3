@@ -8,7 +8,7 @@ public class DirectoryCreateRequestDTO {
 
     @NotBlank(message = "Path is required")
     @Pattern(
-        regexp = "^([a-zA-Z0-9_\\-]+/)*[a-zA-Z0-9_\\-]+$",
+        regexp = "^[a-zA-Z0-9_\\-]+(/[a-zA-Z0-9_\\-]+)*$",
         message = "Path must be a relative path with safe characters only (no .. or absolute paths)"
     )
     @Schema(description = "Relative path of the directory to create", example = "menus/2027-12")
