@@ -39,4 +39,27 @@
         <cve>CVE-2026-43515</cve>
         <cve>CVE-2026-43514</cve>
     </suppress>
+    <suppress until="2026-07-31Z">
+        <notes><![CDATA[
+        spring-core 6.2.18 is the version managed by Spring Boot 3.5.14 (the release in use).
+        These CVEs (CVSS 7.5) have no fixed Spring Boot 3.5.x release available at the Sprint 2
+        submission (2026-06-16). Risk accepted and time-boxed; upgrade Spring Boot when a patched
+        3.5.x / 3.6.x line is published. Tracked in Deliverables/phase2/sprint2/security_findings.md.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring-core@6\.2\.18$</packageUrl>
+        <cve>CVE-2026-41838</cve>
+        <cve>CVE-2026-41842</cve>
+        <cve>CVE-2026-41848</cve>
+        <cve>CVE-2026-41850</cve>
+        <cve>CVE-2026-41851</cve>
+    </suppress>
+    <suppress until="2026-07-31Z">
+        <notes><![CDATA[
+        spring-security-core 6.5.10 is managed by Spring Boot 3.5.14. CVE-2026-40988 (CVSS 7.5)
+        has no fixed release for the 3.5.x line at submission. Risk accepted and time-boxed;
+        review with the spring-core suppression on the next Spring Boot upgrade.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-core@6\.5\.10$</packageUrl>
+        <cve>CVE-2026-40988</cve>
+    </suppress>
 </suppressions>
