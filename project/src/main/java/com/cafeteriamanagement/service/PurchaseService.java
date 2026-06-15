@@ -6,6 +6,7 @@ import com.cafeteriamanagement.model.entity.Menu;
 import com.cafeteriamanagement.model.entity.Purchase;
 import com.cafeteriamanagement.model.entity.User;
 import com.cafeteriamanagement.repository.PurchaseRepository;
+import com.cafeteriamanagement.security.SecurityAuditLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +24,16 @@ public class PurchaseService {
     private final UserService userService;
     private final DishService dishService;
     private final MenuService menuService;
+    private final SecurityAuditLogger auditLogger;
 
     @Autowired
-    public PurchaseService(PurchaseRepository purchaseRepository, UserService userService, DishService dishService, MenuService menuService) {
+    public PurchaseService(PurchaseRepository purchaseRepository, UserService userService,
+                           DishService dishService, MenuService menuService, SecurityAuditLogger auditLogger) {
         this.purchaseRepository = purchaseRepository;
         this.userService = userService;
         this.dishService = dishService;
         this.menuService = menuService;
+        this.auditLogger = auditLogger;
     }
 
     public List<PurchaseDTO> getAllPurchases() {
@@ -64,13 +68,15 @@ public class PurchaseService {
     }
 
     public PurchaseDTO createPurchase(PurchaseDTO purchaseDTO) {
-    User client = userService.findByUsername(purchaseDTO.getClientUsername());
-    Dish dish = dishService.findByName(purchaseDTO.getDishName());
-    validateDishAvailabilityInMenu(dish, purchaseDTO.getDate());
-    client.deductBalance(dish.getPrice());
-    Purchase purchase = new Purchase(client, dish, purchaseDTO.getDate());
-    Purchase savedPurchase = purchaseRepository.save(purchase);
-    return convertToDTO(savedPurchase);
+        User client = userService.findByUsername(purchaseDTO.getClientUsername());
+        Dish dish = dishService.findByName(purchaseDTO.getDishName());
+        validateDishAvailabilityInMenu(dish, purchaseDTO.getDate());
+        client.deductBalance(dish.getPrice());
+        Purchase purchase = new Purchase(client, dish, purchaseDTO.getDate());
+        Purchase savedPurchase = purchaseRepository.save(purchase);
+        auditLogger.logPurchaseOperation("PURCHASE_CREATE", client.getUsername(),
+                savedPurchase.getExternalId(), dish.getName().getValue());
+        return convertToDTO(savedPurchase);
     }
 
     public Optional<PurchaseDTO> updatePurchase(String externalId, PurchaseDTO purchaseDTO) {
@@ -83,6 +89,8 @@ public class PurchaseService {
                     newClient.deductBalance(newDish.getPrice());
                     purchase.updateDetails(newClient, newDish, purchaseDTO.getDate());
                     Purchase savedPurchase = purchaseRepository.save(purchase);
+                    auditLogger.logPurchaseOperation("PURCHASE_UPDATE", newClient.getUsername(),
+                            savedPurchase.getExternalId(), newDish.getName().getValue());
                     return convertToDTO(savedPurchase);
                 });
     }
@@ -90,8 +98,11 @@ public class PurchaseService {
     public boolean deletePurchase(String externalId) {
         return purchaseRepository.findByExternalId(externalId)
                 .map(purchase -> {
+                    String username = purchase.getClient().getUsername();
+                    String dishName = purchase.getDish().getName().getValue();
                     purchase.getClient().addBalance(purchase.getDish().getPrice());
                     purchaseRepository.delete(purchase);
+                    auditLogger.logPurchaseOperation("PURCHASE_DELETE", username, externalId, dishName);
                     return true;
                 })
                 .orElse(false);

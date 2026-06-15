@@ -92,6 +92,21 @@ public class SecurityAuditLogger {
         }
     }
 
+    public void logFileOperation(String event, String username, String path) {
+        AUDIT_LOG.info("event={} username={} path={}",
+            event,
+            sanitize(username),
+            sanitize(path));
+    }
+
+    public void logPurchaseOperation(String event, String username, String purchaseId, String dishName) {
+        AUDIT_LOG.info("event={} username={} purchaseId={} dish={}",
+            event,
+            sanitize(username),
+            sanitize(purchaseId),
+            sanitize(dishName));
+    }
+
     private String sanitize(String value) {
         if (value == null || value.isBlank()) {
             return "unknown";

@@ -1,6 +1,10 @@
 package com.cafeteriamanagement.service;
 
+import com.cafeteriamanagement.security.SecurityAuditLogger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,8 +24,11 @@ public class FileSystemService {
     private static final long MAX_FILE_SIZE_BYTES = 1024 * 1024; // 1 MB
 
     private final Path basePath;
+    private final SecurityAuditLogger auditLogger;
 
-    public FileSystemService(@Value("${app.filesystem.base-dir}") String baseDir) {
+    public FileSystemService(@Value("${app.filesystem.base-dir}") String baseDir,
+                             @Autowired SecurityAuditLogger auditLogger) {
+        this.auditLogger = auditLogger;
         try {
             this.basePath = Paths.get(baseDir).toAbsolutePath().normalize();
             Files.createDirectories(this.basePath);
@@ -33,6 +40,7 @@ public class FileSystemService {
     public void createDirectory(String relativePath) throws IOException {
         Path target = resolveSafe(relativePath);
         Files.createDirectories(target);
+        auditLogger.logFileOperation("CREATE_DIRECTORY", currentUsername(), relativePath);
     }
 
     public void writeFile(String relativePath, String content) throws IOException {
@@ -45,6 +53,7 @@ public class FileSystemService {
             Files.createDirectories(target.getParent());
         }
         Files.writeString(target, content, StandardCharsets.UTF_8);
+        auditLogger.logFileOperation("WRITE_FILE", currentUsername(), relativePath);
     }
 
     public String readFile(String relativePath) throws IOException {
@@ -55,7 +64,9 @@ public class FileSystemService {
         if (!Files.isRegularFile(target)) {
             throw new IllegalArgumentException("Path does not point to a regular file");
         }
-        return Files.readString(target, StandardCharsets.UTF_8);
+        String content = Files.readString(target, StandardCharsets.UTF_8);
+        auditLogger.logFileOperation("READ_FILE", currentUsername(), relativePath);
+        return content;
     }
 
     public List<String> listDirectory(String relativePath) throws IOException {
@@ -92,6 +103,12 @@ public class FileSystemService {
         } else {
             Files.delete(target);
         }
+        auditLogger.logFileOperation("DELETE", currentUsername(), relativePath);
+    }
+
+    private String currentUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null) ? auth.getName() : "unknown";
     }
 
     // Resolves and validates that the resulting path stays within basePath.
