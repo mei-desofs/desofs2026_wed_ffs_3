@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -131,6 +132,7 @@ public class PurchaseController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(summary = "Create purchase", description = "Create a purchase ensuring balance deduction and future date validation")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Purchase created",
@@ -160,6 +162,7 @@ public class PurchaseController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(summary = "Update purchase", description = "Update purchase details for future dates with ownership enforcement")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Purchase updated",
@@ -198,6 +201,7 @@ public class PurchaseController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     @Operation(summary = "Delete purchase", description = "Delete a purchase scheduled for a future date with ownership enforcement")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Purchase deleted", content = @Content),
