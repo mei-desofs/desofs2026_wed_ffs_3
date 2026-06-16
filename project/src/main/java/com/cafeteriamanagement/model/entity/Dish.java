@@ -45,6 +45,9 @@ public class Dish {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
 
+    @Column(length = 500)
+    private String description;
+
     protected Dish() {}
 
     public Dish(Name name, List<Ingredient> ingredients, BigDecimal price) {
@@ -53,6 +56,11 @@ public class Dish {
         this.ingredients = new ArrayList<>(ingredients);
         this.price = price;
         validateVegetarianDish();
+    }
+
+    public Dish(Name name, List<Ingredient> ingredients, BigDecimal price, String description) {
+        this(name, ingredients, price);
+        this.description = description;
     }
 
     public Long getId() {
@@ -75,6 +83,10 @@ public class Dish {
         return price;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public boolean isVegetarian() {
         return ingredients.stream()
                 .noneMatch(ingredient -> 
@@ -87,6 +99,11 @@ public class Dish {
         this.ingredients = new ArrayList<>(ingredients);
         this.price = price;
         validateVegetarianDish();
+    }
+
+    public void updateDetails(Name name, List<Ingredient> ingredients, BigDecimal price, String description) {
+        updateDetails(name, ingredients, price);
+        this.description = description;
     }
 
     private void validateVegetarianDish() {

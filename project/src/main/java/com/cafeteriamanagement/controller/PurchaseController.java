@@ -1,6 +1,7 @@
 package com.cafeteriamanagement.controller;
 
 import com.cafeteriamanagement.dto.PurchaseDTO;
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import com.cafeteriamanagement.service.PurchaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/purchases")
@@ -197,6 +199,47 @@ public class PurchaseController {
         
         return purchaseService.updatePurchase(id, purchaseDTO)
                 .map(purchase -> ResponseEntity.ok(purchase))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'CLIENT')")
+    @Operation(summary = "Update purchase status", description = "ADMIN/EMPLOYEE can confirm or cancel. CLIENT can only cancel their own purchase.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Status updated",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = PurchaseDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid status transition", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Purchase not found", content = @Content)
+    })
+    public ResponseEntity<PurchaseDTO> updateStatus(
+            @Parameter(description = "External identifier of the purchase")
+            @PathVariable String id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "New status: CONFIRMED or CANCELLED", required = true)
+            @RequestBody Map<String, String> body) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isEmployee = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
+
+        PurchaseStatus newStatus = PurchaseStatus.valueOf(body.get("status").toUpperCase());
+
+        if (!isAdmin && !isEmployee) {
+            if (newStatus != PurchaseStatus.CANCELLED) {
+                throw new AccessDeniedException("Clients can only cancel their own purchases");
+            }
+            PurchaseDTO existing = purchaseService.getPurchaseById(id).orElse(null);
+            if (existing == null) return ResponseEntity.notFound().build();
+            if (!currentUsername.equals(existing.getClientUsername())) {
+                throw new AccessDeniedException("Client attempted to cancel another user's purchase");
+            }
+        }
+
+        return purchaseService.updateStatus(id, newStatus)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 

@@ -33,15 +33,20 @@ public class DishController {
     }
 
     @GetMapping
-    @Operation(summary = "List dishes", description = "Retrieve all dishes with ingredient references")
+    @Operation(summary = "List dishes", description = "Retrieve all dishes, optionally filtered by allergen (e.g. FISH, EGGS, MILK_AND_MILK_PRODUCTS)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Dishes retrieved",
             content = @Content(mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = DishDTO.class))))
+                array = @ArraySchema(schema = @Schema(implementation = DishDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Unknown allergen value", content = @Content)
     })
-    public ResponseEntity<List<DishDTO>> getAllDishes() {
-        List<DishDTO> dishes = dishService.getAllDishes();
-        return ResponseEntity.ok(dishes);
+    public ResponseEntity<List<DishDTO>> getAllDishes(
+            @Parameter(description = "Filter dishes that contain this allergen (e.g. FISH, EGGS)", example = "FISH")
+            @RequestParam(required = false) String allergen) {
+        if (allergen != null && !allergen.isBlank()) {
+            return ResponseEntity.ok(dishService.getDishesByAllergen(allergen));
+        }
+        return ResponseEntity.ok(dishService.getAllDishes());
     }
 
     @GetMapping("/{id}")

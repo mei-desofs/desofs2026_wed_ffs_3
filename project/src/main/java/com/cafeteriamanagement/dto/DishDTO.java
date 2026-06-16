@@ -31,6 +31,9 @@ public class DishDTO {
     @Schema(description = "Price in euros", example = "7.99")
     private BigDecimal price;
 
+    @Schema(description = "Optional description of the dish", example = "Grilled chicken breast served with steamed white rice and olive oil")
+    private String description;
+
     public DishDTO() {}
 
     public DishDTO(String id, String name, List<String> ingredientNames, BigDecimal price) {
@@ -70,5 +73,13 @@ public class DishDTO {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

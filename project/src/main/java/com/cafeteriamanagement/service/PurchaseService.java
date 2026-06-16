@@ -5,6 +5,7 @@ import com.cafeteriamanagement.model.entity.Dish;
 import com.cafeteriamanagement.model.entity.Menu;
 import com.cafeteriamanagement.model.entity.Purchase;
 import com.cafeteriamanagement.model.entity.User;
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import com.cafeteriamanagement.repository.PurchaseRepository;
 import com.cafeteriamanagement.security.SecurityAuditLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,26 @@ public class PurchaseService {
                 .orElse(false);
     }
 
+    public Optional<PurchaseDTO> updateStatus(String externalId, PurchaseStatus newStatus) {
+        return purchaseRepository.findByExternalId(externalId)
+                .map(purchase -> {
+                    if (newStatus == PurchaseStatus.CONFIRMED) {
+                        purchase.confirm();
+                    } else if (newStatus == PurchaseStatus.CANCELLED) {
+                        if (purchase.getStatus() != PurchaseStatus.CONFIRMED) {
+                            purchase.getClient().addBalance(purchase.getDish().getPrice());
+                        }
+                        purchase.cancel();
+                    } else {
+                        throw new IllegalArgumentException("Cannot transition to status: " + newStatus);
+                    }
+                    auditLogger.logPurchaseOperation("PURCHASE_STATUS_" + newStatus,
+                            purchase.getClient().getUsername(), externalId,
+                            purchase.getDish().getName().getValue());
+                    return convertToDTO(purchaseRepository.save(purchase));
+                });
+    }
+
     public String getUserExternalIdByUsername(String username) {
         User user = userService.findByUsername(username);
         return user.getExternalId();
@@ -119,6 +140,7 @@ public class PurchaseService {
         dto.setClientUsername(purchase.getClient().getUsername());
         dto.setDishName(purchase.getDish().getName().getValue());
         dto.setDate(purchase.getDate());
+        dto.setStatus(purchase.getStatus());
         return dto;
     }
     

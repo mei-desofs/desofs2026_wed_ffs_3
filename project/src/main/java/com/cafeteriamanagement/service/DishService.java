@@ -3,6 +3,7 @@ package com.cafeteriamanagement.service;
 import com.cafeteriamanagement.dto.DishDTO;
 import com.cafeteriamanagement.model.entity.Dish;
 import com.cafeteriamanagement.model.entity.Ingredient;
+import com.cafeteriamanagement.model.enums.Allergen;
 import com.cafeteriamanagement.model.valueobject.Name;
 import com.cafeteriamanagement.repository.DishRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,13 @@ public class DishService {
                 .collect(Collectors.toList());
     }
 
+    public List<DishDTO> getDishesByAllergen(String allergenName) {
+        Allergen allergen = Allergen.valueOf(allergenName.toUpperCase());
+        return dishRepository.findByIngredientsAllergen(allergen).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     public Optional<DishDTO> getDishById(String externalId) {
         return dishRepository.findByExternalId(externalId)
                 .map(this::convertToDTO);
@@ -50,11 +58,12 @@ public class DishService {
                     List<Ingredient> ingredients = dishDTO.getIngredientNames().stream()
                             .map(ingredientService::findByName)
                             .collect(Collectors.toList());
-                    
+
                     dish.updateDetails(
                             new Name(dishDTO.getName()),
                             ingredients,
-                            dishDTO.getPrice()
+                            dishDTO.getPrice(),
+                            dishDTO.getDescription()
                     );
                     Dish savedDish = dishRepository.save(dish);
                     return convertToDTO(savedDish);
@@ -88,6 +97,7 @@ public class DishService {
                 .map(ingredient -> ingredient.getName().getValue())
                 .collect(Collectors.toList()));
         dto.setPrice(dish.getPrice());
+        dto.setDescription(dish.getDescription());
         return dto;
     }
 
@@ -114,7 +124,8 @@ public class DishService {
         return new Dish(
                 new Name(dto.getName()),
                 ingredients,
-                dto.getPrice()
+                dto.getPrice(),
+                dto.getDescription()
         );
     }
 }
