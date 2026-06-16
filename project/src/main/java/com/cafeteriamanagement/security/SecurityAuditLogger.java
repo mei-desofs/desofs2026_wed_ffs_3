@@ -111,6 +111,11 @@ public class SecurityAuditLogger {
         if (value == null || value.isBlank()) {
             return "unknown";
         }
-        return value.replaceAll("[\\r\\n\\t]", "_");
+        StringBuilder sanitized = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            sanitized.append(Character.isISOControl(c) ? '_' : c);
+        }
+        return sanitized.toString();
     }
 }
