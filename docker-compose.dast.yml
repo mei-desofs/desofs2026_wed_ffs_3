@@ -2,5 +2,13 @@ services:
   app:
     ports:
       - "8081:8081"
+      - "6300:6300"
     environment:
       APP_SECURITY_REQUIRE_HTTPS: "false"
+      # JaCoCo TCP server agent for IAST: ZAP exercises the running app while
+      # JaCoCo records which code paths were reached. After the scan, the pipeline
+      # dumps the exec data and generates a coverage report (iast-coverage-report artifact).
+      JAVA_TOOL_OPTIONS: >-
+        -javaagent:/jacoco/jacocoagent.jar=output=tcpserver,port=6300,address=*,includes=com.cafeteriamanagement.*
+    volumes:
+      - ./jacoco-agent:/jacoco:ro
