@@ -1,6 +1,7 @@
 package com.cafeteriamanagement.controller;
 
 import com.cafeteriamanagement.dto.PurchaseDTO;
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import com.cafeteriamanagement.service.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -146,6 +148,29 @@ public class PurchaseControllerTest {
     void testDeletePurchase_NotFound() {
         when(purchaseService.deletePurchase("missing")).thenReturn(false);
         ResponseEntity<Void> response = purchaseController.deletePurchase("missing");
+        assertEquals(404, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testUpdateStatus_adminConfirm() {
+        purchase1.setClientUsername("admin");
+        when(purchaseService.updateStatus("id1", PurchaseStatus.CONFIRMED)).thenReturn(Optional.of(purchase1));
+        ResponseEntity<PurchaseDTO> response = purchaseController.updateStatus("id1", Map.of("status", "CONFIRMED"));
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testUpdateStatus_adminCancel() {
+        purchase1.setClientUsername("admin");
+        when(purchaseService.updateStatus("id1", PurchaseStatus.CANCELLED)).thenReturn(Optional.of(purchase1));
+        ResponseEntity<PurchaseDTO> response = purchaseController.updateStatus("id1", Map.of("status", "CANCELLED"));
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testUpdateStatus_notFound() {
+        when(purchaseService.updateStatus("missing", PurchaseStatus.CONFIRMED)).thenReturn(Optional.empty());
+        ResponseEntity<PurchaseDTO> response = purchaseController.updateStatus("missing", Map.of("status", "CONFIRMED"));
         assertEquals(404, response.getStatusCodeValue());
     }
 }
