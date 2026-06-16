@@ -28,6 +28,14 @@
 10095	FAIL	Backup File Disclosed
 90028	FAIL	Insecure HTTP Method
 
+# ─── Active-scan only (raised by zap-api-scan, never by the passive baseline) ──
+# These plugins inject payloads against the OpenAPI-imported endpoints.
+6	FAIL	Path Traversal
+7	FAIL	Remote File Inclusion
+90035	FAIL	Server Side Template Injection
+90036	FAIL	Server Side Template Injection (Blind)
+40008	FAIL	Parameter Tampering
+
 # ─── Not applicable (stateless JWT REST API) — ignore ─────────────────────
 10020	IGNORE	X-Frame-Options Header Not Set
 10038	IGNORE	Content Security Policy (CSP) Not Set

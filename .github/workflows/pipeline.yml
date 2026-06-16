@@ -247,7 +247,7 @@ jobs:
 
   # ───────────────────────── STAGE 3: DAST + IAST ─────────────────────────────
   dast:
-    name: DAST/IAST - ZAP Baseline + JaCoCo Instrumentation
+    name: DAST/IAST - ZAP Baseline + API Scan + JaCoCo Instrumentation
     needs: [sast-codeql, sast-spotbugs, sca-dependency-check]
     # Heavy (builds the Docker stack); run on main pushes / on demand, not on every PR.
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -302,7 +302,7 @@ jobs:
           mkdir -p zap-output && chmod 777 zap-output
           cp .zap/rules.tsv zap-output/rules.tsv
 
-      - name: Run ZAP Baseline Scan (gate via .zap/rules.tsv thresholds)
+      - name: Run ZAP Baseline Scan (passive — gate via .zap/rules.tsv thresholds)
         run: |
           docker run --network host \
             -v $(pwd)/zap-output:/zap/wrk/:rw \
@@ -311,6 +311,25 @@ jobs:
             -t http://localhost:8081 \
             -r zap-report.html \
             -J zap-report.json \
+            -c rules.tsv \
+            -I
+
+      # Active scan driven by the OpenAPI definition: ZAP imports the spec from
+      # /v3/api-docs (permitAll) and actively probes every documented endpoint
+      # with injection payloads (SQLi, XSS, path traversal, command injection…).
+      # -O forces the target host to the running CI instance regardless of the
+      # `servers` entry in the spec. Same rules.tsv gate as the baseline scan.
+      - name: Run ZAP API Scan (active — OpenAPI-driven endpoint probing)
+        run: |
+          docker run --network host \
+            -v $(pwd)/zap-output:/zap/wrk/:rw \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-api-scan.py \
+            -t http://localhost:8081/v3/api-docs \
+            -f openapi \
+            -O http://localhost:8081 \
+            -r zap-api-report.html \
+            -J zap-api-report.json \
             -c rules.tsv \
             -I
 
