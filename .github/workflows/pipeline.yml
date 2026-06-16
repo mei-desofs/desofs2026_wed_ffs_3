@@ -245,6 +245,69 @@ jobs:
           name: pitest-mutation-report
           path: project/target/pit-reports/
 
+  # ───────────────────────── STAGE 3: Performance (NFR06 + NFR07) ─────────────
+  performance:
+    name: Performance - Gatling NFR06/NFR07
+    needs: [sast-codeql, sast-spotbugs, sca-dependency-check]
+    # Heavy (builds Docker stack + runs load test); not needed on every PR.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Start application stack
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build app postgres
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+
+      - name: Wait for application to be ready
+        run: |
+          echo "Waiting for app on port 8081..."
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || true)
+            if [ "$STATUS" = "200" ]; then echo "App is up"; break; fi
+            echo "Attempt $i/60 – HTTP $STATUS, waiting 3s..."
+            sleep 3
+          done
+
+      - name: Seed performance test admin user
+        run: |
+          sudo apt-get install -y apache2-utils -q
+          # htpasswd -B generates BCrypt ($2y$ prefix); Spring BCryptPasswordEncoder accepts both $2a$ and $2y$.
+          HASH=$(htpasswd -nbB "perf_admin" "PerfAdmin@1234" | cut -d: -f2)
+          docker compose exec -T postgres psql -U cafeteria -d cafeteriadb -c \
+            "INSERT INTO users (external_id, username, password, type, balance)
+             VALUES ('00000000-perf-0001-0000-000000000001', 'perf_admin', '${HASH}', 'ADMIN', 0.00)
+             ON CONFLICT (username) DO NOTHING;"
+
+      - name: Run Gatling performance tests (NFR06 P95 ≤ 500ms, NFR07 100 users)
+        run: |
+          mvn -B -f project/pom.xml gatling:test -Pperformance \
+            -DbaseUrl=http://localhost:8081
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml down
+
+      - name: Upload Gatling performance report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: gatling-performance-report
+          path: project/target/gatling/
+
   # ───────────────────────── STAGE 3: DAST + IAST ─────────────────────────────
   dast:
     name: DAST/IAST - ZAP Baseline + API Scan + JaCoCo Instrumentation
@@ -374,7 +437,7 @@ jobs:
   # ───────────────────────── STAGE 4: pipeline summary ───────────────────────
   pipeline-summary:
     name: Pipeline Summary
-    needs: [build-test, sast-codeql, sast-spotbugs, sca-dependency-check, mutation, dast]
+    needs: [build-test, sast-codeql, sast-spotbugs, sca-dependency-check, mutation, dast, performance]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -389,6 +452,7 @@ jobs:
           echo "| SCA Dependency-Check | ${{ needs.sca-dependency-check.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Mutation (PITest) | ${{ needs.mutation.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| DAST ZAP + IAST (JaCoCo) | ${{ needs.dast.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Performance Gatling NFR06/NFR07 | ${{ needs.performance.result }} |" >> "$GITHUB_STEP_SUMMARY"
           # Required on every event: build/test + SAST + SCA must succeed.
           for r in "${{ needs.build-test.result }}" "${{ needs.sast-codeql.result }}" \
                    "${{ needs.sast-spotbugs.result }}" "${{ needs.sca-dependency-check.result }}"; do
@@ -399,7 +463,7 @@ jobs:
           done
           # DAST and mutation only run off-PR; "skipped" on a PR is acceptable,
           # but if they ran they must have passed.
-          for r in "${{ needs.dast.result }}" "${{ needs.mutation.result }}"; do
+          for r in "${{ needs.dast.result }}" "${{ needs.mutation.result }}" "${{ needs.performance.result }}"; do
             if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
               echo "Off-PR stage failed: $r"
               exit 1
