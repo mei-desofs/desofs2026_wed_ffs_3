@@ -118,33 +118,79 @@
 
 ## 3. Traceabilidade ASVS → Testes Automatizados
 
-### 3.1 Testes unitários de segurança
+### 3.1 Autenticação e política de passwords (V6)
 
 | Req ASVS | SDR | Teste Automatizado |
 |----------|-----|-------------------|
-| V6.2.1 (min 12 chars) | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordShorterThanMinimum` |
-| V6.2.9 (sem truncação) | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordLongerThanMaximum` |
-| V6.3.1 (rate limit) | SDR04 | `SimpleRateLimiterTest.fifthFailureBlocksKey`, `resetUnblocksKey` |
-| V7.4.1 (logout) | SDR03a | `TokenBlocklistTest.blockedTokenReturnsTrue`, `expiredEntryIsNoLongerBlocked` |
-| V16.3.1 (auth events) | SDR19 | `SecurityAuditLoggerTest.authenticationSuccessIsLoggedAtInfoLevel` |
-| V16.4.1 (log injection) | SDR19b | `SecurityAuditLoggerTest.logInjectionAttemptIsSanitised` |
+| V6.2.1 — passwords ≥ 12 caracteres | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordShorterThanMinimum` · `acceptsPasswordExactlyAtMinimum` · `UserServiceTest.createUser_policyRejects_propagates` |
+| V6.2.4 — rejeição de passwords comprometidas (HIBP) | SDR06 | `UserServiceTest.createUser_breachedPassword_throws` |
+| V6.2.8 — comparação correcta de passwords (BCrypt) | SDR05 | `AuthControllerTest.login_badPassword_throwsBadCredentials` |
+| V6.2.9 — sem truncação de password | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordLongerThanMaximum` · `acceptsPasswordExactlyAtMaximum` |
+| V6.3.1 — anti-brute-force (rate limiting) | SDR04 | `SimpleRateLimiterTest.fifthFailureBlocksKey` · `resetUnblocksKey` · `differentKeysAreTrackedIndependently` · `AuthControllerTest.login_alreadyRateLimited_returns429` · `login_failureTriggersRateLimit_returns429` |
+| V6.3.8 — mensagem de erro genérica (sem enumeração) | SDR07 | `AuthControllerTest.login_badPassword_throwsBadCredentials` · `AuthenticationIntegrationTest.testLoginValidationErrors` |
 
-### 3.2 Testes de integração e arquitectura
+### 3.2 Gestão de sessão e tokens JWT (V7, V9)
 
 | Req ASVS | SDR | Teste Automatizado |
 |----------|-----|-------------------|
-| V8.1.1 (RBAC HTTP) | SDR02 | `AuthenticationIntegrationTest.testProtectedEndpointRequiresJwt` |
-| V12.2.1 (HTTPS) | SDR10 | `SecureChannelIntegrationTest.testHttpsRedirect` |
-| V14 (arquitectura em camadas) | — | `ArchitectureTest.controller_dont_access_repos` |
+| V7.3.1 — timeout absoluto de sessão | SDR03 | `JwtTokenUtilTest.expiredToken_isRejectedOnParse` |
+| V7.3.2 — timeout enforced em cada pedido | SDR03 | `JwtRequestFilterTest.expiredToken_isLoggedAndNotAuthenticated` |
+| V7.4.1 — logout invalida token | SDR03a | `TokenBlocklistTest.blockedTokenReturnsTrue` · `expiredEntryIsNoLongerBlocked` · `blockingSameTokenTwiceIsIdempotent` · `AuthControllerTest.logout_success_blocksToken` · `logout_noToken_returns401` · `JwtRequestFilterTest.blockedToken_isRejected` |
+| V9.1.1 — expiração JWT validada em cada pedido | SDR09 | `JwtRequestFilterTest.expiredToken_isLoggedAndNotAuthenticated` · `JwtTokenUtilTest.expiredToken_isRejectedOnParse` |
+| V9.1.2 — assinatura JWT verificada | SDR09 | `JwtRequestFilterTest.invalidToken_isNotAuthenticated` · `JwtTokenUtilTest.validateToken_falseForDifferentUser` · `generateToken_canBeParsedBack` |
 
-### 3.3 Verificação ao nível do pipeline
+### 3.3 Autorização e controlo de acesso (V8)
+
+| Req ASVS | SDR | Teste Automatizado |
+|----------|-----|-------------------|
+| V8.1.1 — controlo de acesso ao nível HTTP | SDR02 | `AuthenticationIntegrationTest.testProtectedEndpointRequiresJwt` · `JwtRequestFilterTest.validToken_authenticatesRequest` |
+| V8.1.2 — default deny (anyRequest authenticated) | SDR02 | `JwtRequestFilterTest.missingBearerHeader_passesThroughUnauthenticated` · `AuthenticationIntegrationTest.testProtectedEndpointRequiresJwt` |
+| V8.3.x — verificação de ownership em compras | SDR08 | `PurchaseControllerTest.testCreatePurchase` · `testUpdatePurchase` · `testDeletePurchase` |
+
+### 3.4 Validação de input e operações de ficheiros (V1, V4, V5)
+
+| Req ASVS | SDR | Teste Automatizado |
+|----------|-----|-------------------|
+| V1.1.1 — validação de todo o input controlado pelo utilizador | SDR01 | `FileSystemServiceTest.pathTraversal_isRejected` · `blankPath_isRejected` · `FileControllerTest.writeFile_created` |
+| V4.1.1 — validação positiva (allowlist) em paths de ficheiros | SDR01 | `FileSystemServiceTest.pathTraversal_isRejected` · `blankPath_isRejected` |
+| V5.1.1 — operações de ficheiros dentro de diretório sandbox | SDR12 | `FileSystemServiceTest.pathTraversal_isRejected` · `writeAndRead_roundTrip` · `delete_directoryRecursively` |
+| V5.1.2 — limite de tamanho de ficheiro | SDR12 | `FileSystemServiceTest.writeFile_exceedingMaxSize_throws` |
+| V5.2.1 — tratamento de path inválido ou inexistente | SDR12 | `FileSystemServiceTest.readFile_missing_throwsNoSuchFile` · `readFile_onDirectory_throws` · `delete_missing_throwsNoSuchFile` |
+
+### 3.5 Logging de segurança (V16)
+
+| Req ASVS | SDR | Teste Automatizado |
+|----------|-----|-------------------|
+| V16.2.5 — sem credenciais/tokens em logs | SDR19 | `SecurityAuditLoggerTest.nullUsernameIsReplacedWithUnknown` · `tokenAuthenticationFailureUsesBearerTokenPrincipal` |
+| V16.3.1 — eventos de autenticação logados | SDR19 | `SecurityAuditLoggerTest.authenticationSuccessIsLoggedAtInfoLevel` · `authenticationFailureIsLoggedAtWarnLevel` · `authenticationBlockedIsLoggedAtWarnLevel` |
+| V16.3.2 — eventos HTTP 403 logados | SDR19c | `GlobalExceptionHandlerTest.accessDenied_returns403AndIsLogged` |
+| V16.4.1 — prevenção de log injection | SDR19b | `SecurityAuditLoggerTest.logInjectionAttemptIsSanitised` |
+| V16.5.1 — sem erros internos nas respostas | SDR20 | `GlobalExceptionHandlerTest.genericException_returns500WithSafeMessage` |
+| V16.5.3 — global exception handler | SDR20 | `GlobalExceptionHandlerTest.validationException_returns400WithFieldErrors` · `badCredentials_returns401` · `accessDenied_returns403AndIsLogged` · `dataIntegrity_ingredientConstraint` · `genericException_returns500WithSafeMessage` |
+
+### 3.6 Configuração e tratamento de erros (V13)
+
+| Req ASVS | SDR | Teste Automatizado |
+|----------|-----|-------------------|
+| V13.4.2 — sem stack traces nas respostas | SDR13 | `GlobalExceptionHandlerTest.genericException_returns500WithSafeMessage` · `illegalArgument_returns400` · `illegalState_returns400` |
+
+### 3.7 Comunicação segura e arquitectura (V12, V14)
+
+| Req ASVS | SDR | Teste Automatizado |
+|----------|-----|-------------------|
+| V12.1.1 — TLS enforced (redirect HTTP→HTTPS) | SDR10 | `SecureChannelIntegrationTest.redirectsPlainHttpRequestsToHttps` |
+| V12.2.1 — pedidos marcados como seguros pelo reverse proxy | SDR10 | `SecureChannelIntegrationTest.acceptsRequestsMarkedSecureByReverseProxy` |
+| V14 — arquitectura em camadas (controllers não acedem a repos) | — | `ArchitectureTest.controller_dont_access_repos` |
+
+### 3.8 Verificação ao nível do pipeline
 
 | Req ASVS | Gate CI |
 |----------|---------|
-| V15.2.1 (sem deps vulneráveis) | OWASP Dependency-Check em `sca.yml` — falha em CVSS ≥ 7 |
-| V4.x, V16.x (SAST) | CodeQL + SpotBugs/FindSecBugs em `sast.yml` |
-| V4.x, V6.x, V8.x (DAST) | OWASP ZAP baseline em `dast.yml` |
-| V15.x (atualizações de deps) | Dependabot + `dependency-review.yml` em PRs |
+| V15.2.1 — sem dependências com vulnerabilidades conhecidas | OWASP Dependency-Check em `pipeline.yml` — falha em CVSS ≥ 7 |
+| V4.x, V16.x — SAST (análise estática) | CodeQL + SpotBugs/FindSecBugs — `pipeline.yml` (sast-codeql, sast-spotbugs) |
+| V4.x, V6.x, V8.x — DAST (análise dinâmica) | OWASP ZAP baseline — `pipeline.yml` (dast), gate via `.zap/rules.tsv` |
+| V4.x, V6.x — IAST (análise interactiva) | JaCoCo agent durante ZAP — `iast-coverage-report` artifact |
+| V15.x — actualizações de dependências | Dependabot (`.github/dependabot.yml`) + Dependency Review em PRs |
 
 ---
 
