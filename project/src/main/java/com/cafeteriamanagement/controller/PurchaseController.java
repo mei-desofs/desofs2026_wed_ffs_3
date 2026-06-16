@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -225,7 +226,11 @@ public class PurchaseController {
         boolean isEmployee = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
 
-        PurchaseStatus newStatus = PurchaseStatus.valueOf(body.get("status").toUpperCase());
+        String statusValue = body.get("status");
+        PurchaseStatus newStatus = Arrays.stream(PurchaseStatus.values())
+                .filter(s -> s.name().equals(statusValue))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown status: " + statusValue));
 
         if (!isAdmin && !isEmployee) {
             if (newStatus != PurchaseStatus.CANCELLED) {

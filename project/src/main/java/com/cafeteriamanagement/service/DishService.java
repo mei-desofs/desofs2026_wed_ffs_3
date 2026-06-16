@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class DishService {
     }
 
     public List<DishDTO> getDishesByAllergen(String allergenName) {
-        Allergen allergen = Allergen.valueOf(allergenName.toUpperCase());
+        Allergen allergen = Allergen.valueOf(allergenName.toUpperCase(Locale.ROOT));
         return dishRepository.findByIngredientsAllergen(allergen).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
