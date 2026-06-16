@@ -22,7 +22,7 @@ Pipeline: `.github/workflows/pipeline.yml` — gates are **hard-fail** (no
 
 ## 1. SAST — SpotBugs / Find Security Bugs
 
-Baseline scan: **93 findings**. Resolution: **3 fixed in code**, **90 triaged**
+Baseline scan: **93 findings**. Resolution: **5 fixed in code**, **88 triaged**
 (informational, data-carrier convention, accepted risk / false positive, or
 non-security quality).
 
@@ -32,6 +32,7 @@ non-security quality).
 |---------|-------|----------|-----|
 | `DM_DEFAULT_ENCODING` | 2 | `JwtTokenUtil`, `HaveIBeenPwnedClient` | Use explicit `StandardCharsets.UTF_8` instead of the platform default charset. |
 | `IMPROPER_UNICODE` | 1 | `HaveIBeenPwnedClient` | Both sides of the SHA-1 suffix comparison are upper-case hex, so replaced the flagged case-folding (`equalsIgnoreCase`) with a direct `equals(...)`. |
+| `REDOS` (ReDoS-prone regex) | 2 | `DirectoryCreateRequestDTO`, `FileWriteRequestDTO` | Rewrote the path-validation `@Pattern` from the nested-quantifier form `^([a-zA-Z0-9_\-]+/)*[a-zA-Z0-9_\-]+$` to the linear form `^[a-zA-Z0-9_\-]+(/[a-zA-Z0-9_\-]+)*$`, removing the overlapping-quantifier pattern that can cause catastrophic backtracking (ReDoS). |
 
 ### 1.2 Accepted risks (documented exclusions)
 
@@ -66,7 +67,7 @@ same pipeline. Tracked for future cleanup.
 ## 2. SCA — OWASP Dependency-Check
 
 Gate: build fails on **CVSS ≥ 7**. Time-boxed suppressions
-(`config/dependency-check-suppressions.xml`, `until=2026-06-30`):
+(`config/dependency-check-suppressions.xml`; per-entry expiry: Tomcat / Angus `until=2026-06-30`, Spring Framework / Spring Security `until=2026-07-31`):
 
 | Component | CVEs | Rationale |
 |-----------|------|-----------|
@@ -99,7 +100,7 @@ Runs against the full Docker stack (app + PostgreSQL) on pushes to
 
 ## 4. Summary
 
-- **Fixed:** 5 SpotBugs findings (encoding, ReDoS, Unicode).
-- **Accepted risk (documented):** SHA-1 for HIBP, fixed-host SSRF FP, stateless-JWT CSRF, config-sourced path traversal, sanitized log injection, 2 time-boxed transitive CVEs.
-- **Informational/convention/quality:** 83 findings excluded with rationale.
+- **Fixed:** 5 SpotBugs findings — encoding (2), ReDoS-prone regex (2), Unicode (1).
+- **Accepted risk (documented):** SHA-1 for HIBP, fixed-host SSRF FP, stateless-JWT CSRF, config-sourced path traversal, sanitized log injection, time-boxed transitive CVEs (Tomcat, Angus, Spring Framework, Spring Security).
+- **Informational/convention/quality:** 79 findings excluded with rationale (63 informational/convention + 16 non-security quality).
 - **Net result:** every security gate is hard-fail and green — green means *fixed or justified*, never silenced.
