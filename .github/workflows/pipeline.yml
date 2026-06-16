@@ -268,12 +268,12 @@ jobs:
       - name: Download JaCoCo agent for IAST instrumentation
         run: |
           mkdir -p jacoco-agent
-          chmod 777 jacoco-agent
           mvn -B -f project/pom.xml dependency:copy \
             -Dartifact=org.jacoco:org.jacoco.agent:0.8.14:jar:runtime \
             -DoutputDirectory=$(pwd)/jacoco-agent \
             -Dmdep.stripVersion=false
           mv jacoco-agent/org.jacoco.agent-0.8.14-runtime.jar jacoco-agent/jacocoagent.jar
+          chmod -R 777 jacoco-agent
           echo "JaCoCo agent staged at $(pwd)/jacoco-agent/jacocoagent.jar"
 
       - name: Start application stack (JaCoCo-instrumented for IAST)
@@ -317,6 +317,15 @@ jobs:
       - name: Stop Docker Compose services
         if: always()
         run: docker compose -f docker-compose.yml -f docker-compose.dast.yml down
+
+      - name: Check IAST exec file was written
+        if: always()
+        run: |
+          echo "=== jacoco-agent contents ==="
+          ls -la jacoco-agent/ || echo "Directory missing"
+          test -f jacoco-agent/jacoco-iast.exec \
+            && echo "jacoco-iast.exec: FOUND ($(wc -c < jacoco-agent/jacoco-iast.exec) bytes)" \
+            || echo "jacoco-iast.exec: NOT FOUND"
 
       - name: Compile project classes (required for IAST HTML report)
         run: mvn -B -f project/pom.xml compile -DskipTests -q

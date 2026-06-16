@@ -4,11 +4,14 @@ services:
       - "8081:8081"
     environment:
       APP_SECURITY_REQUIRE_HTTPS: "false"
-      # JaCoCo file-output agent for IAST: records which code paths the ZAP scan
-      # exercises. The .exec file is written to the mounted volume when the JVM
-      # shuts down (docker compose down). The pipeline then generates an HTML
-      # coverage report (iast-coverage-report artifact) from that file.
-      JAVA_TOOL_OPTIONS: >-
-        -javaagent:/jacoco/jacocoagent.jar=output=file,destfile=/jacoco/jacoco-iast.exec,includes=com.cafeteriamanagement.*
     volumes:
       - ./jacoco-agent:/jacoco:rw
+    # Override entrypoint to inject the JaCoCo file-output agent for IAST.
+    # The agent writes jacoco-iast.exec to the bind-mounted /jacoco volume when
+    # the JVM shuts down (docker compose down). The pipeline then generates an
+    # HTML coverage report showing which code paths ZAP exercised.
+    entrypoint:
+      - java
+      - -javaagent:/jacoco/jacocoagent.jar=output=file,destfile=/jacoco/jacoco-iast.exec,includes=com.cafeteriamanagement.*
+      - -jar
+      - app.jar
