@@ -168,8 +168,10 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         
-        userDTO.setUsername(currentUsername); 
-        
+        userDTO.setUsername(currentUsername);
+        userDTO.setType(currentUser.getType());
+        userDTO.setBalance(currentUser.getBalance());
+
         return userService.updateUser(currentUser.getId(), userDTO)
                 .map(user -> ResponseEntity.ok(user))
                 .orElse(ResponseEntity.notFound().build());

@@ -1,0 +1,387 @@
+name: CI/CD Secure Pipeline
+
+# Single orchestrated pipeline with explicit stage dependencies (fail-fast).
+#
+#   build-test ─┬─> sast-codeql ─────────┐
+#               ├─> sast-spotbugs ───────┼─> dast (push/dispatch only) ─> summary
+#               ├─> sca-dependency-check ┘
+#               ├─> sca-dependency-review (PR only)
+#               └─> mutation
+#
+# If build/test (incl. JaCoCo coverage gate) fails, NOTHING downstream runs.
+# DAST only runs once every SAST/SCA stage is green, so we never waste a
+# dynamic scan on an artifact that already failed static analysis.
+
+on:
+  push:
+    # main = release branch, develop = integration branch.
+    # Pushes/merges here run the FULL pipeline (incl. DAST + mutation).
+    branches: [main, develop]
+    # Docs-only changes don't need the build/test/security pipeline.
+    paths-ignore:
+      - '**/*.md'
+      - 'Deliverables/**'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    # feature/* and fix/* open PRs against develop (or main).
+    # PRs run only the FAST gate (build + test + SAST + SCA).
+    branches: [main, develop]
+    paths-ignore:
+      - '**/*.md'
+      - 'Deliverables/**'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  schedule:
+    # Weekly full run (CodeQL/SCA pick up newly-disclosed CVEs) — Mondays 08:00 UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+# Least privilege by default; jobs elevate only what they need.
+permissions:
+  contents: read
+
+# A new push to the same ref cancels superseded in-flight runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ───────────────────────── STAGE 1: build, test, coverage gate ─────────────
+  build-test:
+    name: Build, Test & Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build, test and enforce JaCoCo coverage gate
+        run: mvn -B verify
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+
+      - name: Upload JaCoCo coverage report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: jacoco-coverage-report
+          path: project/target/site/jacoco/
+
+      - name: Upload Surefire test results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: surefire-test-results
+          path: project/target/surefire-reports/
+
+  # ───────────────────────── STAGE 2: SAST ───────────────────────────────────
+  sast-codeql:
+    name: SAST - CodeQL
+    needs: build-test
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@b0c4fd77f6c559021d78430ec4d0d169ae74a4eb # v3
+        with:
+          languages: java
+          queries: security-and-quality
+
+      - name: Build project for CodeQL
+        run: mvn -B compile -f project/pom.xml
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@b0c4fd77f6c559021d78430ec4d0d169ae74a4eb # v3
+        with:
+          category: "/language:java"
+
+  sast-spotbugs:
+    name: SAST - SpotBugs (Find Security Bugs)
+    needs: build-test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run SpotBugs + Find Security Bugs (gate)
+        run: mvn -B compile spotbugs:check
+
+      - name: Upload SpotBugs report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: spotbugs-report
+          path: project/target/spotbugsXml.xml
+
+  # ───────────────────────── STAGE 2: SCA ────────────────────────────────────
+  sca-dependency-check:
+    name: SCA - OWASP Dependency-Check
+    needs: build-test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run OWASP Dependency-Check (fails build on CVSS >= 7)
+        run: mvn -B dependency-check:check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+      - name: Upload Dependency-Check report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: project/target/dependency-check-report.*
+
+  sca-dependency-review:
+    name: SCA - Dependency Review (PR diff)
+    needs: build-test
+    # The action diffs base vs head, so it only works on pull_request events.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
+        with:
+          fail-on-severity: high
+
+  # ───────────────────────── STAGE 2: mutation testing ───────────────────────
+  mutation:
+    name: Mutation Testing (PITest)
+    needs: build-test
+    # Expensive deep analysis: run on main/scheduled/manual, not on every PR.
+    # PRs keep the fast gate (build + unit tests + coverage + SAST + SCA).
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run PITest mutation coverage (enforces mutationThreshold)
+        run: mvn -B test-compile org.pitest:pitest-maven:mutationCoverage
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+
+      - name: Upload PITest mutation report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: pitest-mutation-report
+          path: project/target/pit-reports/
+
+  # ───────────────────────── STAGE 3: DAST ───────────────────────────────────
+  dast:
+    name: DAST - OWASP ZAP Baseline
+    needs: [sast-codeql, sast-spotbugs, sca-dependency-check]
+    # Heavy (builds the Docker stack); run on main pushes / on demand, not on every PR.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Start application stack with Docker Compose
+        run: docker compose -f docker-compose.yml -f docker-compose.dast.yml up -d --build app postgres
+        env:
+          JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
+
+      - name: Wait for application to be ready
+        run: |
+          echo "Waiting for app to start on port 8081..."
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "App is up (HTTP $STATUS)"
+              break
+            fi
+            echo "Attempt $i/60 - not ready yet (HTTP $STATUS), waiting 3s..."
+            sleep 3
+          done
+
+      - name: Pull ZAP Docker image
+        run: docker pull ghcr.io/zaproxy/zaproxy:stable
+
+      - name: Create ZAP output directory
+        run: mkdir -p zap-output && chmod 777 zap-output
+
+      - name: Run ZAP Baseline Scan (gate via .zap/rules.tsv thresholds)
+        run: |
+          docker run --network host \
+            -v $(pwd)/zap-output:/zap/wrk/:rw \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://localhost:8081 \
+            -r zap-report.html \
+            -J zap-report.json \
+            -c rules.tsv
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: zap-report
+          path: zap-output/
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.dast.yml down
+
+  # ───────────────────────── STAGE 4: pipeline summary ───────────────────────
+  pipeline-summary:
+    name: Pipeline Summary
+    needs: [build-test, sast-codeql, sast-spotbugs, sca-dependency-check, mutation, dast]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate stage results
+        run: |
+          echo "## Secure Pipeline results" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Stage | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build & Test | ${{ needs.build-test.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| SAST CodeQL | ${{ needs.sast-codeql.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| SAST SpotBugs | ${{ needs.sast-spotbugs.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| SCA Dependency-Check | ${{ needs.sca-dependency-check.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Mutation (PITest) | ${{ needs.mutation.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| DAST ZAP | ${{ needs.dast.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          # Required on every event: build/test + SAST + SCA must succeed.
+          for r in "${{ needs.build-test.result }}" "${{ needs.sast-codeql.result }}" \
+                   "${{ needs.sast-spotbugs.result }}" "${{ needs.sca-dependency-check.result }}"; do
+            if [ "$r" != "success" ]; then
+              echo "Required stage failed: $r"
+              exit 1
+            fi
+          done
+          # DAST and mutation only run off-PR; "skipped" on a PR is acceptable,
+          # but if they ran they must have passed.
+          for r in "${{ needs.dast.result }}" "${{ needs.mutation.result }}"; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
+              echo "Off-PR stage failed: $r"
+              exit 1
+            fi
+          done
+
+  # ───────────────────────── STAGE 5: deploy (main only) ─────────────────────
+  deploy:
+    name: Deploy - Build release image
+    needs: pipeline-summary
+    # Only a green pipeline on a push/merge to main produces a deployable image.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Build production Docker image
+        run: |
+          docker build \
+            -t cafeteria-management:${{ github.sha }} \
+            -t cafeteria-management:latest \
+            ./project
+
+      # Publishing to GitHub Container Registry is one step away — the built-in
+      # GITHUB_TOKEN already has packages:write (granted above). Uncomment to enable:
+      #
+      # - name: Log in to GHCR
+      #   uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      #
+      # - name: Push image to GHCR
+      #   run: |
+      #     IMAGE=ghcr.io/${{ github.repository }}
+      #     docker tag cafeteria-management:${{ github.sha }} $IMAGE:${{ github.sha }}
+      #     docker tag cafeteria-management:latest            $IMAGE:latest
+      #     docker push $IMAGE:${{ github.sha }}
+      #     docker push $IMAGE:latest
+
+      - name: Deployment summary
+        run: |
+          echo "## Deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "Built release image \`cafeteria-management:${{ github.sha }}\` from main." >> "$GITHUB_STEP_SUMMARY"
+          echo "Enable the GHCR publish steps in pipeline.yml to ship it." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs / Find Security Bugs exclusion filter.
+
+  Philosophy: the SpotBugs job is the project's SECURITY gate (Find Security Bugs
+  detectors). Genuinely actionable findings are FIXED in code. The exclusions below
+  are limited to (a) informational detectors that flag normal Spring/Servlet
+  constructs, (b) data-carrier conventions, (c) accepted security risks with an
+  explicit rationale, and (d) non-security code-quality findings already covered by
+  the CodeQL "security-and-quality" job that runs in the same pipeline.
+
+  Every exclusion is cross-referenced in security_findings.md.
+
+  Fixed in code (NOT excluded):
+    - DM_DEFAULT_ENCODING -> explicit StandardCharsets.UTF_8
+    - IMPROPER_UNICODE    -> direct equals() on upper-case hex (no case transform)
+-->
+<FindBugsFilter>
+
+  <!-- (a) Informational detectors — not bugs. SPRING_ENDPOINT merely marks every
+       @RequestMapping handler; SERVLET_HEADER marks reads of HTTP headers (validated
+       before use). Authorization is enforced centrally in SecurityConfig. -->
+  <Match><Bug pattern="SPRING_ENDPOINT"/></Match>
+  <Match><Bug pattern="SERVLET_HEADER"/></Match>
+
+  <!-- (b) Data-carrier convention. DTOs and JPA entities intentionally expose their
+       fields; defensive-copying every getter/setter adds no security value here. -->
+  <Match><Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/></Match>
+
+  <!-- (c) Accepted security risks — see security_findings.md for full rationale. -->
+
+  <!-- HIBP Pwned Passwords uses k-anonymity: it REQUIRES SHA-1 of the password and a
+       fixed, constant host (api.pwnedpasswords.com) queried with a 5-hex-char prefix.
+       SHA-1 is not used for storage (bcrypt is); the host is not user-controlled. -->
+  <Match>
+    <Class name="com.cafeteriamanagement.security.HaveIBeenPwnedClient"/>
+    <Bug pattern="WEAK_MESSAGE_DIGEST_SHA1,URLCONNECTION_SSRF_FD"/>
+  </Match>
+
+  <!-- Stateless REST API authenticated via JWT in the Authorization header (no cookies,
+       SessionCreationPolicy.STATELESS) -> CSRF tokens are not applicable. -->
+  <Match>
+    <Class name="com.cafeteriamanagement.config.SecurityConfig"/>
+    <Bug pattern="SPRING_CSRF_PROTECTION_DISABLED"/>
+  </Match>
+
+  <!-- baseDir is a trusted configuration value (app.filesystem.base-dir), not user
+       input. Every user-supplied path goes through resolveSafe(), which normalizes and
+       enforces startsWith(basePath); covered by FileSystemServiceTest path-traversal tests. -->
+  <Match>
+    <Class name="com.cafeteriamanagement.service.FileSystemService"/>
+    <Bug pattern="PATH_TRAVERSAL_IN"/>
+  </Match>
+
+  <!-- ReDoS false positive. The validation regexes use the anchored seg(/seg)* form
+       where each '/' is a unique delimiter (word chars exclude '/'), so backtracking is
+       linear, not catastrophic. Find Security Bugs flags the (X+)* shape syntactically.
+       Input is also length-bounded by Bean Validation and re-validated by resolveSafe(). -->
+  <Match>
+    <Bug pattern="REDOS"/>
+    <Or>
+      <Class name="com.cafeteriamanagement.dto.DirectoryCreateRequestDTO"/>
+      <Class name="com.cafeteriamanagement.dto.FileWriteRequestDTO"/>
+    </Or>
+  </Match>
+
+  <!-- Log injection already mitigated: SecurityAuditLogger routes every interpolated
+       value through sanitize() (strips CR/LF/TAB); the other two sites log only
+       exception messages. The detector cannot follow the sanitizer helper method. -->
+  <Match>
+    <Bug pattern="CRLF_INJECTION_LOGS"/>
+    <Or>
+      <Class name="com.cafeteriamanagement.security.SecurityAuditLogger"/>
+      <Class name="com.cafeteriamanagement.exception.GlobalExceptionHandler"/>
+      <Class name="com.cafeteriamanagement.security.HaveIBeenPwnedClient"/>
+    </Or>
+  </Match>
+
+  <!-- (d) Non-security code-quality findings (style / performance / robustness).
+       The SpotBugs job gates on security; general quality is analysed by the CodeQL
+       "security-and-quality" job in the same pipeline. -->
+  <Match>
+    <Bug pattern="CT_CONSTRUCTOR_THROW,REC_CATCH_EXCEPTION,MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR,SS_SHOULD_BE_STATIC,DE_MIGHT_IGNORE,UPM_UNCALLED_PRIVATE_METHOD,NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE,URF_UNREAD_FIELD"/>
+  </Match>
+
+</FindBugsFilter>

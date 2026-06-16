@@ -148,4 +148,78 @@ public class PurchaseControllerTest {
         ResponseEntity<Void> response = purchaseController.deletePurchase("missing");
         assertEquals(404, response.getStatusCodeValue());
     }
+
+    private void authenticateAsClient(String username) {
+        when(authentication.getName()).thenReturn(username);
+        org.springframework.security.core.GrantedAuthority clientAuthority =
+            mock(org.springframework.security.core.GrantedAuthority.class);
+        when(clientAuthority.getAuthority()).thenReturn("ROLE_CLIENT");
+        java.util.Collection authorities = java.util.Collections.singleton(clientAuthority);
+        when(authentication.getAuthorities()).thenReturn(authorities);
+    }
+
+    @Test
+    void getPurchasesByClient_asClient_ownData_ok() {
+        authenticateAsClient("client1");
+        when(purchaseService.getUserExternalIdByUsername("client1")).thenReturn("ext-client1");
+        when(purchaseService.getPurchasesByClientId("ext-client1")).thenReturn(Arrays.asList(purchase1));
+
+        ResponseEntity<List<PurchaseDTO>> response = purchaseController.getPurchasesByClient("ext-client1");
+
+        assertTrue(response.getStatusCode().is2xxSuccessful());
+        assertEquals(1, response.getBody().size());
+    }
+
+    @Test
+    void getPurchasesByClient_asClient_otherData_forbidden() {
+        authenticateAsClient("client1");
+        when(purchaseService.getUserExternalIdByUsername("client1")).thenReturn("ext-client1");
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+            () -> purchaseController.getPurchasesByClient("ext-other"));
+        verify(purchaseService, never()).getPurchasesByClientId("ext-other");
+    }
+
+    @Test
+    void createPurchase_asClient_forAnotherUser_forbidden() {
+        authenticateAsClient("client1");
+        PurchaseDTO payload = new PurchaseDTO();
+        payload.setClientUsername("otheruser");
+        payload.setDate(futureDate1);
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+            () -> purchaseController.createPurchase(payload));
+        verify(purchaseService, never()).createPurchase(any(PurchaseDTO.class));
+    }
+
+    @Test
+    void updatePurchase_asClient_otherUsersPurchase_forbidden() {
+        authenticateAsClient("client1");
+        PurchaseDTO existing = new PurchaseDTO();
+        existing.setId("id1");
+        existing.setDate(futureDate1);
+        existing.setClientUsername("otheruser");
+        when(purchaseService.getPurchaseById("id1")).thenReturn(Optional.of(existing));
+
+        PurchaseDTO payload = new PurchaseDTO();
+        payload.setDate(futureDate1);
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+            () -> purchaseController.updatePurchase("id1", payload));
+        verify(purchaseService, never()).updatePurchase(eq("id1"), any(PurchaseDTO.class));
+    }
+
+    @Test
+    void deletePurchase_asClient_otherUsersPurchase_forbidden() {
+        authenticateAsClient("client1");
+        PurchaseDTO existing = new PurchaseDTO();
+        existing.setId("id1");
+        existing.setDate(futureDate1);
+        existing.setClientUsername("otheruser");
+        when(purchaseService.getPurchaseById("id1")).thenReturn(Optional.of(existing));
+
+        assertThrows(org.springframework.security.access.AccessDeniedException.class,
+            () -> purchaseController.deletePurchase("id1"));
+        verify(purchaseService, never()).deletePurchase("id1");
+    }
 }
