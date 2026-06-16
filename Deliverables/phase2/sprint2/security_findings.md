@@ -72,11 +72,16 @@ Gate: build fails on **CVSS ≥ 7**. Time-boxed suppressions
 |-----------|------|-----------|
 | `tomcat-embed-core` / `tomcat-embed-websocket` 10.1.54 | CVE-2026-41293/41284/43513/43512/42498/43515/43514 | 10.1.54 is the latest 10.1.x available for Spring Boot 3.5.x. Review when a fixed 10.1.x ships or after a tested Boot upgrade. |
 | `angus-activation` 2.0.3 | CVE-2025-7962 | Latest stable; Dependency-Check maps it to the wider `angus_mail` CPE (false positive). |
-| `spring-core` 6.2.18 | CVE-2026-41838/41842/41848/41850/41851 (CVSS 7.5) | Managed by Spring Boot 3.5.14; no fixed 3.5.x release at submission. Time-boxed (`until=2026-07-31`), upgrade Spring Boot when patched. |
-| `spring-security-core` 6.5.10 | CVE-2026-40988 (CVSS 7.5) | Managed by Spring Boot 3.5.14; no fixed 3.5.x release at submission. Time-boxed; review on next Spring Boot upgrade. |
+| `org.springframework` 6.2.18 (whole umbrella: `spring-core`, `spring-tx`, `spring-beans`, `spring-web`, ...) | CVE-2026-41838/41842/41848/41850/41851 (CVSS 7.5) | Managed by Spring Boot 3.5.14; no fixed 3.5.x release at submission. These are **framework-wide** CVEs — Dependency-Check maps each one to *every* Spring Framework artifact of this version, so the suppression `packageUrl` uses the regex `spring-[a-z]+@6.2.18` to cover them all (the CVE list stays specific). Time-boxed (`until=2026-07-31`), upgrade Spring Boot when patched. |
+| `org.springframework.security` 6.5.10 (whole umbrella: `spring-security-core`, `spring-security-web`, `spring-security-config`, ...) | CVE-2026-40988 (CVSS 7.5) | Managed by Spring Boot 3.5.14; no fixed 3.5.x release at submission. Framework-wide CVE — suppression `packageUrl` uses the regex `spring-security-[a-z]+@6.5.10` to cover every Spring Security artifact. Time-boxed; review on next Spring Boot upgrade. |
 
 > The `swagger-ui` / DOMPurify advisories reported alongside these are below the CVSS ≥ 7
 > gate threshold, so they are reported but do not block the build.
+>
+> **Note:** the Spring suppressions were initially scoped to `spring-core` / `spring-security-core`
+> only, but the same framework-wide CVEs also surfaced on `spring-tx` and `spring-security-web`.
+> The `packageUrl` regex was broadened to cover the whole umbrella so the CVSS ≥ 7 gate is
+> satisfied consistently across all affected artifacts of the same version.
 
 Dependabot (`.github/dependabot.yml`) keeps Maven + GitHub Actions dependencies
 updated weekly → continuous vulnerability management.
