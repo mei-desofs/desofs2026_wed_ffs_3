@@ -89,11 +89,21 @@ updated weekly → continuous vulnerability management.
 
 ---
 
-## 3. DAST — OWASP ZAP Baseline
+## 3. DAST — OWASP ZAP (Baseline + API Scan)
 
 Runs against the full Docker stack (app + PostgreSQL) on pushes to
-`develop`/`main`. Alert thresholds are managed in `.zap/rules.tsv`; the pipeline
-passes `-I` (ignore warnings) so only `FAIL`-level rules block the gate.
+`develop`/`main`. Two complementary scans run back-to-back against the same live
+instance, both gated by the shared `.zap/rules.tsv` thresholds (`-I` so only
+`FAIL`-level rules block the gate):
+
+| Scan | Tooling | What it does |
+|------|---------|--------------|
+| **Baseline (passive)** | `zap-baseline.py -t http://localhost:8081` | Spiders the app and inspects responses passively — headers, disclosure, misconfiguration. Does **not** attack. |
+| **API Scan (active)** | `zap-api-scan.py -t .../v3/api-docs -f openapi` | Imports the OpenAPI definition (`springdoc`, served at `/v3/api-docs`) and **actively probes every documented endpoint** with injection payloads (SQLi, XSS, path traversal, command injection, SSTI). `-O` pins the host to the CI instance. |
+
+The API scan is the meaningful coverage upgrade: the passive baseline only sees
+what the spider reaches, whereas the OpenAPI-driven scan exercises **all 30+
+documented operations** with real attack payloads.
 
 ### 3.1 Alert threshold configuration (`.zap/rules.tsv`)
 
@@ -102,6 +112,7 @@ passes `-I` (ignore warnings) so only `FAIL`-level rules block the gate.
 | SQL Injection (all variants) | `FAIL` | Unacceptable — Spring Data JPA + parameterised queries make this a build blocker if found |
 | XSS (reflected / persistent / DOM) | `FAIL` | Unacceptable even in a REST API context |
 | SSRF, OS Command Injection, XXE, Path Traversal | `FAIL` | Critical OWASP Top-10 risks |
+| Remote File Inclusion, Server-Side Template Injection, Parameter Tampering | `FAIL` | Active-scan-only checks — raised by the OpenAPI-driven API scan, never by the passive baseline. Path Traversal is especially relevant given `FileSystemService` performs OS file operations |
 | CRLF Injection, Insecure HTTP Method, TRACE Method | `FAIL` | Exploitable without active attack tooling |
 | CSRF, X-Frame-Options, SameSite Cookie | `IGNORE` | Stateless JWT API — no session cookies, not applicable |
 | CSP, Clickjacking headers | `IGNORE` | API returns JSON, not rendered HTML |
@@ -126,6 +137,12 @@ Baseline passive scan against `http://localhost:8081` (full Docker stack).
 | Plugin ID | Name | Risk | Instances | Decision | Rationale |
 |-----------|------|------|-----------|----------|-----------|
 | 10049 | Non-Storable Content | Informational | 2 (`/`, `/sitemap.xml`) | **IGNORE** | Spring Security sets `Cache-Control: no-cache, no-store` on all responses by default. This is intentional for a security-sensitive REST API — prevents sensitive data from being cached by proxy servers. Already configured as `IGNORE` in `.zap/rules.tsv`. |
+
+> **API scan (active):** newly added (`feature/zap-api-scan`). It imports the
+> OpenAPI spec and actively attacks every documented endpoint; its results are
+> published as the separate `zap-api-report` artifact and gated by the same
+> `.zap/rules.tsv`. The active-scan-only `FAIL` rules (Path Traversal, RFI, SSTI,
+> Parameter Tampering) were added in the same change.
 
 No Medium, Low, or High findings were produced. The absence of injection, XSS,
 and header findings confirms:
