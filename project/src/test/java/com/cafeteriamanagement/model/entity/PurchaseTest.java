@@ -2,6 +2,7 @@ package com.cafeteriamanagement.model.entity;
 
 import com.cafeteriamanagement.model.enums.Allergen;
 import com.cafeteriamanagement.model.enums.IngredientType;
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import com.cafeteriamanagement.model.enums.UserType;
 import com.cafeteriamanagement.model.valueobject.Name;
 import org.junit.jupiter.api.Test;
@@ -74,5 +75,39 @@ class PurchaseTest {
         assertNotEquals(p, null);
         assertNotEquals(p, "x");
         assertTrue(p.toString().contains("c"));
+    }
+
+    @Test
+    void newPurchase_statusIsPending() {
+        Purchase p = new Purchase(client("100.00"), dish(new BigDecimal("5.00")), future);
+        assertEquals(PurchaseStatus.PENDING, p.getStatus());
+    }
+
+    @Test
+    void confirm_setsStatusConfirmed() {
+        Purchase p = new Purchase(client("100.00"), dish(new BigDecimal("5.00")), future);
+        p.confirm();
+        assertEquals(PurchaseStatus.CONFIRMED, p.getStatus());
+    }
+
+    @Test
+    void cancel_setsStatusCancelled() {
+        Purchase p = new Purchase(client("100.00"), dish(new BigDecimal("5.00")), future);
+        p.cancel();
+        assertEquals(PurchaseStatus.CANCELLED, p.getStatus());
+    }
+
+    @Test
+    void confirm_afterCancel_throws() {
+        Purchase p = new Purchase(client("100.00"), dish(new BigDecimal("5.00")), future);
+        p.cancel();
+        assertThrows(IllegalStateException.class, p::confirm);
+    }
+
+    @Test
+    void cancel_afterConfirm_throws() {
+        Purchase p = new Purchase(client("100.00"), dish(new BigDecimal("5.00")), future);
+        p.confirm();
+        assertThrows(IllegalStateException.class, p::cancel);
     }
 }

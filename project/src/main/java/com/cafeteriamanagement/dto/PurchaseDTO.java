@@ -1,5 +1,6 @@
 package com.cafeteriamanagement.dto;
 
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,6 +23,9 @@ public class PurchaseDTO {
     @NotNull(message = "Date is required")
     @Schema(description = "Date the purchase applies to. Must be in the future", example = "2024-06-01")
     private LocalDate date;
+
+    @Schema(description = "Current status of the purchase", example = "PENDING", accessMode = Schema.AccessMode.READ_ONLY)
+    private PurchaseStatus status;
 
     public PurchaseDTO() {}
 
@@ -62,5 +66,13 @@ public class PurchaseDTO {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    public PurchaseStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PurchaseStatus status) {
+        this.status = status;
     }
 }

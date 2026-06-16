@@ -52,7 +52,8 @@
 | Mutation testing (PITest, gate 60%) | ✅ | `pom.xml` |
 | SAST — CodeQL + SpotBugs/Find Security Bugs | ✅ | [security_findings.md §1](./security_findings.md#1-sast--spotbugs--find-security-bugs) |
 | SCA — OWASP Dependency-Check + Dependency Review + Dependabot | ✅ | [security_findings.md §2](./security_findings.md#2-sca--owasp-dependency-check) |
-| DAST — OWASP ZAP baseline | ✅ | [security_findings.md §3](./security_findings.md#3-dast--owasp-zap-baseline) |
+| DAST — OWASP ZAP baseline (`.zap/rules.tsv` thresholds) | ✅ | [security_findings.md §3](./security_findings.md#3-dast--owasp-zap-baseline) |
+| IAST — JaCoCo TCP server agent during ZAP scan | ✅ | [security_findings.md §4](./security_findings.md#4-iast--interactive-application-security-testing-jacoco--zap) |
 | Security findings triaged (93 SpotBugs → 5 fixed, 88 triaged) | ✅ | [security_findings.md](./security_findings.md) |
 
 ### Pipeline Automation (20%)
@@ -99,7 +100,8 @@ These buckets are *appreciated, not the emphasis* of the project (per §6.3). Ev
 - [x] Scripted, mostly-automated builds and tests (`mvn verify`, orchestrated pipeline)
 - [x] Static analysis (CodeQL + SpotBugs)
 - [x] Component analysis (OWASP Dependency-Check + Dependency Review + Dependabot)
-- [x] Dynamic analysis (OWASP ZAP)
+- [x] Dynamic analysis (OWASP ZAP) with alert thresholds (`.zap/rules.tsv`)
+- [x] Interactive analysis (IAST) — JaCoCo runtime instrumentation during ZAP scan
 - [x] Mutation testing (PITest) and coverage gate (JaCoCo)
 
 ### Pipeline Automation (20%)

@@ -1,5 +1,6 @@
 package com.cafeteriamanagement.model.entity;
 
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -32,6 +33,10 @@ public class Purchase {
     @NotNull(message = "Date is required")
     private LocalDate date;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PurchaseStatus status = PurchaseStatus.PENDING;
+
     protected Purchase() {}
 
     public Purchase(User client, Dish dish, LocalDate date) {
@@ -40,6 +45,7 @@ public class Purchase {
         this.client = client;
         this.dish = dish;
         this.date = date;
+        this.status = PurchaseStatus.PENDING;
     }
 
     public Long getId() {
@@ -60,6 +66,24 @@ public class Purchase {
 
     public LocalDate getDate() {
         return date;
+    }
+
+    public PurchaseStatus getStatus() {
+        return status;
+    }
+
+    public void confirm() {
+        if (this.status == PurchaseStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot confirm a cancelled purchase");
+        }
+        this.status = PurchaseStatus.CONFIRMED;
+    }
+
+    public void cancel() {
+        if (this.status == PurchaseStatus.CONFIRMED) {
+            throw new IllegalStateException("Cannot cancel a confirmed purchase");
+        }
+        this.status = PurchaseStatus.CANCELLED;
     }
 
     public void updateDetails(User client, Dish dish, LocalDate date) {

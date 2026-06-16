@@ -4,3 +4,14 @@ services:
       - "8081:8081"
     environment:
       APP_SECURITY_REQUIRE_HTTPS: "false"
+    volumes:
+      - ./jacoco-agent:/jacoco:rw
+    # Override entrypoint to inject the JaCoCo file-output agent for IAST.
+    # The agent writes jacoco-iast.exec to the bind-mounted /jacoco volume when
+    # the JVM shuts down (docker compose down). The pipeline then generates an
+    # HTML coverage report showing which code paths ZAP exercised.
+    entrypoint:
+      - java
+      - -javaagent:/jacoco/jacocoagent.jar=output=file,destfile=/jacoco/jacoco-iast.exec,includes=com.cafeteriamanagement.*
+      - -jar
+      - app.jar

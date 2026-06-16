@@ -5,6 +5,7 @@ import com.cafeteriamanagement.model.entity.Dish;
 import com.cafeteriamanagement.model.entity.Menu;
 import com.cafeteriamanagement.model.entity.Purchase;
 import com.cafeteriamanagement.model.entity.User;
+import com.cafeteriamanagement.model.enums.PurchaseStatus;
 import com.cafeteriamanagement.model.valueobject.Name;
 import com.cafeteriamanagement.repository.PurchaseRepository;
 import com.cafeteriamanagement.security.SecurityAuditLogger;
@@ -296,6 +297,67 @@ class PurchaseServiceTest {
     void deletePurchase_notFound() {
         when(purchaseRepository.findByExternalId("missing")).thenReturn(Optional.empty());
         assertFalse(purchaseService.deletePurchase("missing"));
+    }
+
+    // ---- updateStatus ----
+
+    @Test
+    void updateStatus_confirm_success() {
+        Purchase existing = mock(Purchase.class);
+        User client = clientWithBalance();
+        Dish dish = dishWith(1L, "Dish 1");
+        when(existing.getClient()).thenReturn(client);
+        when(existing.getDish()).thenReturn(dish);
+        when(existing.getExternalId()).thenReturn("id1");
+        when(existing.getDate()).thenReturn(futureDate);
+        when(existing.getStatus()).thenReturn(PurchaseStatus.CONFIRMED);
+        when(purchaseRepository.findByExternalId("id1")).thenReturn(Optional.of(existing));
+        when(purchaseRepository.save(any(Purchase.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Optional<PurchaseDTO> result = purchaseService.updateStatus("id1", PurchaseStatus.CONFIRMED);
+        assertTrue(result.isPresent());
+        verify(existing).confirm();
+    }
+
+    @Test
+    void updateStatus_cancel_refundsBalance() {
+        Purchase existing = mock(Purchase.class);
+        User client = clientWithBalance();
+        Dish dish = dishWith(1L, "Dish 1");
+        when(existing.getClient()).thenReturn(client);
+        when(existing.getDish()).thenReturn(dish);
+        when(existing.getExternalId()).thenReturn("id1");
+        when(existing.getDate()).thenReturn(futureDate);
+        when(existing.getStatus()).thenReturn(PurchaseStatus.PENDING);
+        when(purchaseRepository.findByExternalId("id1")).thenReturn(Optional.of(existing));
+        when(purchaseRepository.save(any(Purchase.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Optional<PurchaseDTO> result = purchaseService.updateStatus("id1", PurchaseStatus.CANCELLED);
+        assertTrue(result.isPresent());
+        verify(client).addBalance(dish.getPrice());
+        verify(existing).cancel();
+    }
+
+    @Test
+    void updateStatus_invalidTransition_throws() {
+        Purchase existing = mock(Purchase.class);
+        User client = clientWithBalance();
+        Dish dish = dishWith(1L, "Dish 1");
+        when(existing.getClient()).thenReturn(client);
+        when(existing.getDish()).thenReturn(dish);
+        when(existing.getExternalId()).thenReturn("id1");
+        when(existing.getDate()).thenReturn(futureDate);
+        when(existing.getStatus()).thenReturn(PurchaseStatus.PENDING);
+        when(purchaseRepository.findByExternalId("id1")).thenReturn(Optional.of(existing));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> purchaseService.updateStatus("id1", PurchaseStatus.PENDING));
+    }
+
+    @Test
+    void updateStatus_notFound() {
+        when(purchaseRepository.findByExternalId("missing")).thenReturn(Optional.empty());
+        assertFalse(purchaseService.updateStatus("missing", PurchaseStatus.CONFIRMED).isPresent());
     }
 
     // ---- helpers ----
