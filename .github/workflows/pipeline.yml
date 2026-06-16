@@ -268,6 +268,7 @@ jobs:
       - name: Download JaCoCo agent for IAST instrumentation
         run: |
           mkdir -p jacoco-agent
+          chmod 777 jacoco-agent
           mvn -B -f project/pom.xml dependency:copy \
             -Dartifact=org.jacoco:org.jacoco.agent:0.8.14:jar:runtime \
             -DoutputDirectory=$(pwd)/jacoco-agent \
@@ -313,14 +314,6 @@ jobs:
             -c rules.tsv \
             -I
 
-      - name: Dump JaCoCo IAST coverage data (app must still be running)
-        run: |
-          mvn -B -f project/pom.xml jacoco:dump \
-            -Djacoco.address=localhost \
-            -Djacoco.port=6300 \
-            -Djacoco.destFile=target/jacoco-iast.exec
-        continue-on-error: true
-
       - name: Stop Docker Compose services
         if: always()
         run: docker compose -f docker-compose.yml -f docker-compose.dast.yml down
@@ -332,7 +325,7 @@ jobs:
       - name: Generate IAST coverage report
         run: |
           mvn -B -f project/pom.xml jacoco:report \
-            -Djacoco.dataFile=target/jacoco-iast.exec \
+            -Djacoco.dataFile=$(pwd)/jacoco-agent/jacoco-iast.exec \
             -Djacoco.outputDirectory=target/iast-report
         continue-on-error: true
 
