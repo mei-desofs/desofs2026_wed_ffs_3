@@ -245,9 +245,9 @@ jobs:
           name: pitest-mutation-report
           path: project/target/pit-reports/
 
-  # ───────────────────────── STAGE 3: DAST ───────────────────────────────────
+  # ───────────────────────── STAGE 3: DAST + IAST ─────────────────────────────
   dast:
-    name: DAST - OWASP ZAP Baseline
+    name: DAST/IAST - ZAP Baseline + JaCoCo Instrumentation
     needs: [sast-codeql, sast-spotbugs, sca-dependency-check]
     # Heavy (builds the Docker stack); run on main pushes / on demand, not on every PR.
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -258,7 +258,25 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Start application stack with Docker Compose
+      - name: Set up Java 17 (Maven tooling for IAST)
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Download JaCoCo agent for IAST instrumentation
+        run: |
+          mkdir -p jacoco-agent
+          mvn -B -f project/pom.xml dependency:copy \
+            -Dartifact=org.jacoco:org.jacoco.agent:0.8.14:jar:runtime \
+            -DoutputDirectory=$(pwd)/jacoco-agent \
+            -Dmdep.stripVersion=false
+          mv jacoco-agent/org.jacoco.agent-0.8.14-runtime.jar jacoco-agent/jacocoagent.jar
+          chmod -R 777 jacoco-agent
+          echo "JaCoCo agent staged at $(pwd)/jacoco-agent/jacocoagent.jar"
+
+      - name: Start application stack (JaCoCo-instrumented for IAST)
         run: docker compose -f docker-compose.yml -f docker-compose.dast.yml up -d --build app postgres
         env:
           JWT_SECRET: ci-pipeline-test-secret-key-never-use-in-prod
@@ -279,8 +297,10 @@ jobs:
       - name: Pull ZAP Docker image
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
-      - name: Create ZAP output directory
-        run: mkdir -p zap-output && chmod 777 zap-output
+      - name: Prepare ZAP working directory and alert rules
+        run: |
+          mkdir -p zap-output && chmod 777 zap-output
+          cp .zap/rules.tsv zap-output/rules.tsv
 
       - name: Run ZAP Baseline Scan (gate via .zap/rules.tsv thresholds)
         run: |
@@ -291,7 +311,32 @@ jobs:
             -t http://localhost:8081 \
             -r zap-report.html \
             -J zap-report.json \
-            -c rules.tsv
+            -c rules.tsv \
+            -I
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.dast.yml down
+
+      - name: Check IAST exec file was written
+        if: always()
+        run: |
+          echo "=== jacoco-agent contents ==="
+          ls -la jacoco-agent/ || echo "Directory missing"
+          test -f jacoco-agent/jacoco-iast.exec \
+            && echo "jacoco-iast.exec: FOUND ($(wc -c < jacoco-agent/jacoco-iast.exec) bytes)" \
+            || echo "jacoco-iast.exec: NOT FOUND"
+
+      - name: Compile project classes (required for IAST HTML report)
+        run: mvn -B -f project/pom.xml compile -DskipTests -q
+        continue-on-error: true
+
+      - name: Generate IAST coverage report
+        run: |
+          mvn -B -f project/pom.xml jacoco:report \
+            -Djacoco.dataFile=$(pwd)/jacoco-agent/jacoco-iast.exec \
+            -Djacoco.outputDirectory=target/iast-report
+        continue-on-error: true
 
       - name: Upload ZAP report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -300,9 +345,12 @@ jobs:
           name: zap-report
           path: zap-output/
 
-      - name: Stop Docker Compose services
+      - name: Upload IAST coverage report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.dast.yml down
+        with:
+          name: iast-coverage-report
+          path: project/target/iast-report/
 
   # ───────────────────────── STAGE 4: pipeline summary ───────────────────────
   pipeline-summary:
@@ -321,7 +369,7 @@ jobs:
           echo "| SAST SpotBugs | ${{ needs.sast-spotbugs.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| SCA Dependency-Check | ${{ needs.sca-dependency-check.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Mutation (PITest) | ${{ needs.mutation.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| DAST ZAP | ${{ needs.dast.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| DAST ZAP + IAST (JaCoCo) | ${{ needs.dast.result }} |" >> "$GITHUB_STEP_SUMMARY"
           # Required on every event: build/test + SAST + SCA must succeed.
           for r in "${{ needs.build-test.result }}" "${{ needs.sast-codeql.result }}" \
                    "${{ needs.sast-spotbugs.result }}" "${{ needs.sca-dependency-check.result }}"; do

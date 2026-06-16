@@ -1,0 +1,63 @@
+# ZAP Baseline Alert Thresholds — Coffeetaria REST API
+# Format: <alert-id> TAB <IGNORE|WARN|FAIL> TAB <description>
+# Stateless REST API with JWT auth — CSRF and cookie-based alerts are not applicable.
+# Run with -I (ignore warnings) so only FAIL-level rules block the pipeline gate.
+
+# ─── Critical — fail the gate ───────────────────────────────────────────────
+40018	FAIL	SQL Injection
+40019	FAIL	SQL Injection - MySQL
+40020	FAIL	SQL Injection - Hypersonic SQL
+40021	FAIL	SQL Injection - Oracle
+40022	FAIL	SQL Injection - PostgreSQL
+40024	FAIL	SQL Injection - SQLite
+40027	FAIL	SQL Injection - MsSQL
+40012	FAIL	Cross Site Scripting (Reflected)
+40014	FAIL	Cross Site Scripting (Persistent)
+40026	FAIL	Cross Site Scripting (DOM Based)
+40040	FAIL	Server Side Request Forgery
+90023	FAIL	XML External Entity Attack
+90020	FAIL	Remote OS Command Injection
+90025	FAIL	Expression Language Injection
+90017	FAIL	XSLT Injection
+90021	FAIL	XPath Injection
+90019	FAIL	Server Side Include
+40003	FAIL	CRLF Injection
+10105	FAIL	Weak Authentication Method
+10108	FAIL	TRACE Method Enabled
+10099	FAIL	Source Code Disclosure - Git
+10095	FAIL	Backup File Disclosed
+90028	FAIL	Insecure HTTP Method
+
+# ─── Not applicable (stateless JWT REST API) — ignore ─────────────────────
+10020	IGNORE	X-Frame-Options Header Not Set
+10038	IGNORE	Content Security Policy (CSP) Not Set
+40009	IGNORE	Cross-Site Request Forgery
+40028	IGNORE	CSRF (Anti-CSRF Tokens Check)
+40029	IGNORE	CSRF (Anti-CSRF Tokens Checker)
+40045	IGNORE	CSRF (SameSite)
+90001	IGNORE	Insecure JSF ViewState
+90026	IGNORE	SOAP XML Injection
+90029	IGNORE	SOAP Action Spoofing
+90030	IGNORE	WSDL File Detection
+90033	IGNORE	Loosely Scoped Cookie
+10054	IGNORE	Cookie Without SameSite Attribute
+10049	IGNORE	Non-Storable Content
+10050	IGNORE	Retrieved from Cache
+10104	IGNORE	User Agent Fuzzer
+10041	IGNORE	HTTP to HTTPS Insecure Transition in Form Post
+
+# ─── Informational — warn but do not fail the gate (-I suppresses exit code 1) ─
+10021	WARN	X-Content-Type-Options Header Missing
+10036	WARN	Server Leaks Version Information via Server Header
+10063	WARN	Permissions Policy Header Not Set
+10094	WARN	Base64 Disclosure
+10096	WARN	Timestamp Disclosure
+10098	WARN	Cross-Domain Misconfiguration
+10027	WARN	Information Disclosure - Suspicious Comments
+90002	WARN	Private IP Disclosure
+90022	WARN	Application Error Disclosure
+10062	WARN	PII Disclosure
+10055	WARN	Content Security Policy
+10044	WARN	Big Redirect Response
+10057	WARN	Username Hash Found
+90034	WARN	Cloud Metadata Potentially Exposed

@@ -2,6 +2,9 @@ project/target/
 project/package-lock.json
 *.class
 
+# macOS metadata
+.DS_Store
+
 # Secrets — never commit real credentials
 .env
 .env.local
