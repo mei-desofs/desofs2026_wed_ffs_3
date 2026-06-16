@@ -22,9 +22,11 @@
 | V10 – OAuth and OIDC | 0 | 0 | 36 | 0 |
 | V11 – Cryptography | 10 | 4 | 8 | 2 |
 | V12 – Secure Communication | 2 | 1 | 2 | 7 |
-| V13 – Configuration | 3 | 0 | 1 | 17 |
-| V15 – Secure Coding | 4 | 0 | 1 | 16 |
-| V16 – Security Logging | 7 | 0 | 0 | 10 |
+| V13 – Configuration | 5 | 1 | 3 | 12 |
+| V14 – Data Protection | 5 | 0 | 4 | 4 |
+| V15 – Secure Coding and Architecture | 11 | 0 | 1 | 9 |
+| V16 – Security Logging and Error Handling | 9 | 2 | 0 | 6 |
+| V17 – WebRTC | 0 | 0 | 12 | 0 |
 
 ---
 
@@ -147,6 +149,9 @@
 | V13.4.1 | `.dockerignore` exclui `.git` | `project/.dockerignore`: exclui `.git`, `target/`, `.env*` |
 | V13.4.2 | Sem stack traces nas respostas | `GlobalExceptionHandler` retorna mensagem genérica |
 | V13.4.5 | Actuator restrito | `management.endpoints.web.exposure.include=health`; `/actuator/**` negado |
+| V13.2.3 | Sem credenciais default na BD | PostgreSQL com utilizador dedicado `cafeteria` (não `postgres/postgres`) |
+| V13.4.4 | HTTP TRACE desativado | Default do Tomcat embebido (`allowTrace=false`) |
+| V13.3.1 | Segredos via env vars (*In Progress*) | `JWT_SECRET`/`SPRING_DATASOURCE_PASSWORD`; `.env*` em `.gitignore`+`.dockerignore`; defaults dev-only por substituir em prod |
 
 ### V15 – Secure Coding
 
@@ -225,5 +230,6 @@
 | V9.2.1 | JWT usa HS256 (simétrico) — RS256 assimétrico previsto no design | Médio | Requer gestão de keypair; adiado |
 | V16.3 | Operações de listDirectory não geram evento de audit | Baixo | Tradeoff de ruído vs. utilidade |
 | V2 (lógica de negócio) | `PurchaseService.createPurchase` deduz o saldo **antes** de construir `Purchase`, e o construtor re-valida `hasEnoughBalance(price)` sobre o saldo já reduzido → um cliente precisa de ≥ 2×preço para comprar. Não manifesta na demo porque os pratos seeded têm preço 0.00. O `@Transactional` garante que a dedução é revertida, mas a compra falha indevidamente. | Médio | Corrigir ordem (validar antes de deduzir, ou remover a re-validação no construtor); só então adicionar o teste de rollback transacional verdadeiro (deduzir → falhar → reverter) |
+| V15.3.3 / V8.2.3 | `PUT /api/users/me` (`UserController.updateCurrentUser`) só força o `username`; deixa o cliente enviar `type` e `balance` no corpo, aplicados por `UserService.updateUser`. Um **CLIENT** pode escalar-se a **ADMIN** e definir o próprio **saldo** (mass assignment / escalada de privilégios). | Alto | No `/me` ignorar `type`/`balance` do payload (preservar valores atuais) ou usar DTO de self-update sem esses campos |
 
 > Para o detalhe requisito a requisito, abrir [`ASVS_5_0_Tracker.xlsx`](../../ASVS_5_0_Tracker.xlsx).
