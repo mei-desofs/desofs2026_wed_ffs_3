@@ -162,4 +162,31 @@ class DishServiceTest {
         when(dishRepository.findByNameValue("Pizza")).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> dishService.findByName("Pizza"));
     }
+
+    @Test
+    void getDishesByAllergen_returnsFiltered() {
+        Ingredient egg = new Ingredient(new Name("Egg"), IngredientType.EGGS, Allergen.EGGS);
+        Dish eggDish = new Dish(new Name("Omelette"), List.of(egg), new BigDecimal("6.00"));
+        when(dishRepository.findByIngredientsAllergen(Allergen.EGGS)).thenReturn(List.of(eggDish));
+
+        List<DishDTO> result = dishService.getDishesByAllergen("EGGS");
+        assertEquals(1, result.size());
+        assertEquals("Omelette", result.get(0).getName());
+    }
+
+    @Test
+    void getDishesByAllergen_invalidAllergen_throws() {
+        assertThrows(IllegalArgumentException.class, () -> dishService.getDishesByAllergen("UNKNOWN_ALLERGEN"));
+    }
+
+    @Test
+    void createDish_withDescription_setsDescription() {
+        DishDTO dto = new DishDTO(null, "Pasta", List.of("Tomato"), new BigDecimal("9.00"));
+        dto.setDescription("Classic tomato pasta");
+        when(ingredientService.findByName("Tomato")).thenReturn(tomato);
+        when(dishRepository.save(any(Dish.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        DishDTO result = dishService.createDish(dto);
+        assertEquals("Classic tomato pasta", result.getDescription());
+    }
 }

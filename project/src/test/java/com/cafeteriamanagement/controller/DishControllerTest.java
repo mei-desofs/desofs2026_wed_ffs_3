@@ -95,4 +95,12 @@ public class DishControllerTest {
         ResponseEntity<Void> response = dishController.deleteDish("missing");
         assertEquals(404, response.getStatusCodeValue());
     }
+
+    @Test
+    void testGetAllDishes_withAllergenFilter() {
+        when(dishService.getDishesByAllergen("FISH")).thenReturn(Arrays.asList(dish1));
+        ResponseEntity<List<DishDTO>> response = dishController.getAllDishes("FISH");
+        assertTrue(response.getStatusCode().is2xxSuccessful());
+        assertEquals(1, response.getBody().size());
+    }
 }
