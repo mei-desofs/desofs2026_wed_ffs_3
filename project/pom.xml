@@ -126,7 +126,8 @@
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <xmlOutput>true</xmlOutput>
-                    <failOnError>false</failOnError>
+                    <failOnError>true</failOnError>
+                    <excludeFilterFile>${project.basedir}/config/spotbugs-exclude.xml</excludeFilterFile>
                     <plugins>
                         <plugin>
                             <groupId>com.h3xstream.findsecbugs</groupId>
@@ -140,6 +141,18 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.14</version>
+                <configuration>
+                    <!-- Framework wiring with no business logic to exercise: excluded
+                         from coverage so the metric reflects logic we actually test.
+                         HaveIBeenPwnedClient is a thin HTTP adapter to the external HIBP
+                         API (network I/O); it is exercised through UserService (mocked)
+                         and cannot be unit-tested without hitting a third-party service. -->
+                    <excludes>
+                        <exclude>**/CafeteriaManagementApplication.class</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/security/HaveIBeenPwnedClient.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -154,12 +167,36 @@
                             <goal>report</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <!-- Coverage gate (ratchet). Current achieved ~91% instruction
+                             coverage; the floor is set to 0.90 to lock in the gain and
+                             fail the build on any regression. Raise as coverage grows. -->
+                        <id>jacoco-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
-                <version>1.15.0</version>
+                <version>1.19.1</version>
                 <configuration>
                     <targetClasses>
                         <param>com.cafeteriamanagement.model.entity.Purchase</param>
@@ -198,17 +235,21 @@
                     <!-- Additional PITest settings -->
                     <exportLineCoverage>true</exportLineCoverage>
                     <timestampedReports>false</timestampedReports>
-                    <mutationThreshold>0</mutationThreshold>
-                    <coverageThreshold>0</coverageThreshold>
+                    <!-- Real gate (ratchet). Measured 2026-06-15: 68% mutation coverage,
+                         82% line coverage on the targeted Purchase classes. Floors set
+                         below the achieved score to fail on regression while leaving
+                         headroom; raise as the mutation score improves. -->
+                    <mutationThreshold>60</mutationThreshold>
+                    <coverageThreshold>75</coverageThreshold>
 
-                    <!-- Avoid issues with Spring context -->
-                    <skipFailingTests>true</skipFailingTests>
+                    <!-- A failing unit test must break the build, not be silently skipped. -->
+                    <skipFailingTests>false</skipFailingTests>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.pitest</groupId>
                         <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>1.2.1</version>
+                        <version>1.2.2</version>
                     </dependency>
                 </dependencies>
             </plugin>
