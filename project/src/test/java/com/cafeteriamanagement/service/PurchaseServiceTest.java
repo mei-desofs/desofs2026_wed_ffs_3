@@ -221,6 +221,7 @@ class PurchaseServiceTest {
         PurchaseDTO dto = new PurchaseDTO(null, "client1", "Dish 1", futureDate);
         User client = mock(User.class);
         when(client.getUsername()).thenReturn("client1");
+        when(client.hasEnoughBalance(any())).thenReturn(true);
         Dish dish = dishWith(1L, "Dish 1");
         when(userService.findByUsername("client1")).thenReturn(client);
         when(dishService.findByName("Dish 1")).thenReturn(dish);

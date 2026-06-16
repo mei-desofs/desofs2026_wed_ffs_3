@@ -150,7 +150,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateCurrentUser_forwardsClientControlledTypeAndBalance() {
+    void updateCurrentUser_ignoresClientControlledTypeAndBalance() {
         authenticateAs("john");
         when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
         when(userService.updateUser(eq("id1"), any(UserDTO.class))).thenReturn(Optional.of(user1));
@@ -165,7 +165,7 @@ class UserControllerTest {
         UserDTO forwarded = captor.getValue();
 
         assertEquals("john", forwarded.getUsername());
-        assertEquals(UserType.ADMIN, forwarded.getType());
-        assertEquals(new BigDecimal("99999.00"), forwarded.getBalance());
+        assertEquals(UserType.CLIENT, forwarded.getType());
+        assertEquals(new BigDecimal("10.00"), forwarded.getBalance());
     }
 }

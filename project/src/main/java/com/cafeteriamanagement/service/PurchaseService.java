@@ -71,8 +71,8 @@ public class PurchaseService {
         User client = userService.findByUsername(purchaseDTO.getClientUsername());
         Dish dish = dishService.findByName(purchaseDTO.getDishName());
         validateDishAvailabilityInMenu(dish, purchaseDTO.getDate());
-        client.deductBalance(dish.getPrice());
         Purchase purchase = new Purchase(client, dish, purchaseDTO.getDate());
+        client.deductBalance(dish.getPrice());
         Purchase savedPurchase = purchaseRepository.save(purchase);
         auditLogger.logPurchaseOperation("PURCHASE_CREATE", client.getUsername(),
                 savedPurchase.getExternalId(), dish.getName().getValue());
@@ -86,8 +86,8 @@ public class PurchaseService {
                     User newClient = userService.findByUsername(purchaseDTO.getClientUsername());
                     Dish newDish = dishService.findByName(purchaseDTO.getDishName());
                     validateDishAvailabilityInMenu(newDish, purchaseDTO.getDate());
-                    newClient.deductBalance(newDish.getPrice());
                     purchase.updateDetails(newClient, newDish, purchaseDTO.getDate());
+                    newClient.deductBalance(newDish.getPrice());
                     Purchase savedPurchase = purchaseRepository.save(purchase);
                     auditLogger.logPurchaseOperation("PURCHASE_UPDATE", newClient.getUsername(),
                             savedPurchase.getExternalId(), newDish.getName().getValue());

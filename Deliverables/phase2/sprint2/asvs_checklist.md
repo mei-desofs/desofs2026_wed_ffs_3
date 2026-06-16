@@ -197,7 +197,7 @@
 | V7.4.1 (logout) | SDR03a, TC26 | `TokenBlocklistTest.blockedTokenReturnsTrue`, `expiredEntryIsNoLongerBlocked`, `JwtRequestFilterTest.blockedToken_isRejected` |
 | V8 (identidade do JWT, anti-IDOR) | SDR02, TC28 | `UserControllerTest.getCurrentUser_found`, `updateCurrentUser_success` |
 | V8.2.2 (ownership, anti-IDOR/BOLA) | SDR02, TC09/TC10/TC14 | `PurchaseControllerTest.getPurchasesByClient_asClient_otherData_forbidden`, `createPurchase_asClient_forAnotherUser_forbidden`, `updatePurchase_asClient_otherUsersPurchase_forbidden`, `deletePurchase_asClient_otherUsersPurchase_forbidden` |
-| V15.3.3 / V8.2.3 (mass assignment — gap F2) | — | `UserControllerTest.updateCurrentUser_forwardsClientControlledTypeAndBalance` (caracteriza o bug: `/me` propaga `type`/`balance` do cliente) |
+| V15.3.3 / V8.2.3 (mass assignment) | SDR07 | `UserControllerTest.updateCurrentUser_ignoresClientControlledTypeAndBalance` (`/me` preserva `type`/`balance` do utilizador atual; F2 corrigido) |
 | V9 (token só válido p/ utilizador certo) | SDR01, TC02 | `JwtTokenUtilTest.validateToken_falseForDifferentUser`, `JwtRequestFilterTest.invalidToken_isNotAuthenticated` |
 | V16.3.1 (auth events) | SDR19, TC32 | `SecurityAuditLoggerTest.authenticationSuccess/Failure/BlockedIsLogged...` |
 | V16.4.1 (log injection) | SDR19b | `SecurityAuditLoggerTest.logInjectionAttemptIsSanitised` |
@@ -231,7 +231,7 @@
 | V8.3 | `@PreAuthorize` só em controller — não há verificação de ownership ao nível do serviço | Baixo | Hardening futuro |
 | V9.2.1 | JWT usa HS256 (simétrico) — RS256 assimétrico previsto no design | Médio | Requer gestão de keypair; adiado |
 | V16.3 | Operações de listDirectory não geram evento de audit | Baixo | Tradeoff de ruído vs. utilidade |
-| V2 (lógica de negócio) | `PurchaseService.createPurchase` deduz o saldo **antes** de construir `Purchase`, e o construtor re-valida `hasEnoughBalance(price)` sobre o saldo já reduzido → um cliente precisa de ≥ 2×preço para comprar. Não manifesta na demo porque os pratos seeded têm preço 0.00. O `@Transactional` garante que a dedução é revertida, mas a compra falha indevidamente. | Médio | Corrigir ordem (validar antes de deduzir, ou remover a re-validação no construtor); só então adicionar o teste de rollback transacional verdadeiro (deduzir → falhar → reverter) |
-| V15.3.3 / V8.2.3 | `PUT /api/users/me` (`UserController.updateCurrentUser`) só força o `username`; deixa o cliente enviar `type` e `balance` no corpo, aplicados por `UserService.updateUser`. Um **CLIENT** pode escalar-se a **ADMIN** e definir o próprio **saldo** (mass assignment / escalada de privilégios). | Alto | No `/me` ignorar `type`/`balance` do payload (preservar valores atuais) ou usar DTO de self-update sem esses campos |
+| V2 (lógica de negócio) | ~~Saldo deduzido antes de validar → cliente precisava de ≥ 2×preço.~~ **Corrigido (F1):** `PurchaseService` constrói/valida o `Purchase` sobre o saldo cheio antes de `deductBalance` (em `createPurchase` e `updatePurchase`). | — | Resolvido; coberto por `PurchaseServiceTest` + `PurchaseTest` |
+| V15.3.3 / V8.2.3 | ~~`PUT /api/users/me` permitia mass assignment de `type`/`balance` (escalada de privilégios).~~ **Corrigido (F2):** `updateCurrentUser` força `type`/`balance` aos valores atuais do utilizador. | — | Resolvido; guardado por `UserControllerTest.updateCurrentUser_ignoresClientControlledTypeAndBalance` |
 
 > Para o detalhe requisito a requisito, abrir [`ASVS_5_0_Tracker.xlsx`](../../ASVS_5_0_Tracker.xlsx).
