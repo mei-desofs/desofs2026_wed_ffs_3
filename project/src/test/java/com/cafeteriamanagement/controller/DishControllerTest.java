@@ -38,7 +38,7 @@ public class DishControllerTest {
     @Test
     void testGetAllDishes() {
         when(dishService.getAllDishes()).thenReturn(Arrays.asList(dish1, dish2));
-        ResponseEntity<List<DishDTO>> response = dishController.getAllDishes();
+        ResponseEntity<List<DishDTO>> response = dishController.getAllDishes(null);
         assertTrue(response.getStatusCode().is2xxSuccessful());
         List<DishDTO> result = response.getBody();
         assertEquals(2, result.size());
