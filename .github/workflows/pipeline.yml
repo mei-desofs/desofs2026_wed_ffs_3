@@ -270,7 +270,7 @@ jobs:
           mkdir -p jacoco-agent
           mvn -B -f project/pom.xml dependency:copy \
             -Dartifact=org.jacoco:org.jacoco.agent:0.8.14:jar:runtime \
-            -DoutputDirectory=./jacoco-agent/ \
+            -DoutputDirectory=$(pwd)/jacoco-agent \
             -Dmdep.stripVersion=false
           mv jacoco-agent/org.jacoco.agent-0.8.14-runtime.jar jacoco-agent/jacocoagent.jar
           echo "JaCoCo agent staged at $(pwd)/jacoco-agent/jacocoagent.jar"
