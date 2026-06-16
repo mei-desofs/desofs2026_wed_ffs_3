@@ -211,6 +211,8 @@
 | V16.4.1 (log injection) | SDR19b | `SecurityAuditLoggerTest.logInjectionAttemptIsSanitised` |
 | V16.5.1 (erro genérico sem leak) | SDR12 | `GlobalExceptionHandlerTest.genericException_returns500WithSafeMessage`, `dataIntegrity_unknownConstraint_genericMessage` |
 | V16.3.2 (403 auditado) | SDR20a | `GlobalExceptionHandlerTest.accessDenied_returns403AndIsLogged` |
+| V6.2.4 (rejeição de passwords comprometidas, HIBP) | SDR06 | `UserServiceTest.createUser_breachedPassword_throws` |
+| V6.3.8 (mensagem de erro genérica, sem enumeração) | SDR07 | `AuthControllerTest.login_badPassword_throwsBadCredentials`, `AuthenticationIntegrationTest.testLoginValidationErrors` |
 
 ### 3.2 Gestão de sessão e tokens JWT (V7, V9)
 

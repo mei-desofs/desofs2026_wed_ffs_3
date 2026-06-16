@@ -255,4 +255,68 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+            Performance profile: Gatling load tests for NFR06 (P95 ≤ 500 ms)
+            and NFR07 (100 concurrent users without degradation).
+
+            Activate with:  mvn gatling:test -Pperformance -DbaseUrl=http://localhost:8081
+            Simulations:    src/gatling/java/com/cafeteriamanagement/performance/
+            Prerequisite:   a user "perf_admin" / "PerfAdmin@1234" must exist in the DB
+                            (seeded by the CI pipeline via docker compose exec psql).
+        -->
+        <profile>
+            <id>performance</id>
+            <dependencies>
+                <dependency>
+                    <groupId>io.gatling.highcharts</groupId>
+                    <artifactId>gatling-charts-highcharts</artifactId>
+                    <version>3.11.5</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <!--
+                        Register src/gatling/java as an additional test source directory so
+                        Maven's test-compile phase picks it up. Without this, the simulation
+                        class is never compiled and Gatling's forked JVM throws ClassNotFoundException.
+                        This plugin only runs when -Pperformance is active, so the Gatling
+                        classes are never compiled during the regular mvn verify lifecycle.
+                    -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>add-gatling-test-source</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>${project.basedir}/src/gatling/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.gatling</groupId>
+                        <artifactId>gatling-maven-plugin</artifactId>
+                        <version>4.10.1</version>
+                        <configuration>
+                            <simulationClass>com.cafeteriamanagement.performance.CafeteriaPerformanceSimulation</simulationClass>
+                            <failOnError>true</failOnError>
+                            <runMultipleSimulations>false</runMultipleSimulations>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
