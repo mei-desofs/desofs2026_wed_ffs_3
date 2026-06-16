@@ -210,6 +210,34 @@ class PurchaseServiceTest {
         assertTrue(ex.getMessage().contains("No menu available"));
     }
 
+    /**
+     * TC39 / FR17b / NFR09 (ACID): a CLIENT without enough balance must not be able to
+     * place a purchase. The balance guard rejects the operation before anything is persisted,
+     * so no Purchase row is saved and no audit event is emitted — the service is left in a
+     * consistent state (the {@code @Transactional} boundary additionally guarantees that any
+     * partial change is rolled back).
+     */
+    @Test
+    void createPurchase_insufficientBalance_isRejectedAndNothingPersisted() {
+        PurchaseDTO dto = new PurchaseDTO(null, "client1", "Dish 1", futureDate);
+        User client = mock(User.class);
+        when(client.getUsername()).thenReturn("client1");
+        when(client.hasEnoughBalance(any())).thenReturn(true);
+        Dish dish = dishWith(1L, "Dish 1");
+        when(userService.findByUsername("client1")).thenReturn(client);
+        when(dishService.findByName("Dish 1")).thenReturn(dish);
+        Menu menu = mock(Menu.class);
+        when(menu.getMeatDish()).thenReturn(dish);
+        when(menuService.findByDate(futureDate)).thenReturn(menu);
+        doThrow(new IllegalStateException("Insufficient balance")).when(client).deductBalance(any());
+
+        assertThrows(IllegalStateException.class, () -> purchaseService.createPurchase(dto));
+
+        verify(purchaseRepository, never()).save(any(Purchase.class));
+        verify(securityAuditLogger, never())
+                .logPurchaseOperation(anyString(), anyString(), anyString(), anyString());
+    }
+
     // ---- updatePurchase ----
 
     @Test
