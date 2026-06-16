@@ -196,6 +196,8 @@
 | V7.3.1 (expiração de token) | SDR01, TC22 | `JwtTokenUtilTest.expiredToken_isRejectedOnParse` |
 | V7.4.1 (logout) | SDR03a, TC26 | `TokenBlocklistTest.blockedTokenReturnsTrue`, `expiredEntryIsNoLongerBlocked`, `JwtRequestFilterTest.blockedToken_isRejected` |
 | V8 (identidade do JWT, anti-IDOR) | SDR02, TC28 | `UserControllerTest.getCurrentUser_found`, `updateCurrentUser_success` |
+| V8.2.2 (ownership, anti-IDOR/BOLA) | SDR02, TC09/TC10/TC14 | `PurchaseControllerTest.getPurchasesByClient_asClient_otherData_forbidden`, `createPurchase_asClient_forAnotherUser_forbidden`, `updatePurchase_asClient_otherUsersPurchase_forbidden`, `deletePurchase_asClient_otherUsersPurchase_forbidden` |
+| V15.3.3 / V8.2.3 (mass assignment — gap F2) | — | `UserControllerTest.updateCurrentUser_forwardsClientControlledTypeAndBalance` (caracteriza o bug: `/me` propaga `type`/`balance` do cliente) |
 | V9 (token só válido p/ utilizador certo) | SDR01, TC02 | `JwtTokenUtilTest.validateToken_falseForDifferentUser`, `JwtRequestFilterTest.invalidToken_isNotAuthenticated` |
 | V16.3.1 (auth events) | SDR19, TC32 | `SecurityAuditLoggerTest.authenticationSuccess/Failure/BlockedIsLogged...` |
 | V16.4.1 (log injection) | SDR19b | `SecurityAuditLoggerTest.logInjectionAttemptIsSanitised` |

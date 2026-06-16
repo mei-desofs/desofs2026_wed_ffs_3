@@ -6,6 +6,7 @@ import com.cafeteriamanagement.service.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -146,5 +147,25 @@ class UserControllerTest {
         ResponseEntity<UserDTO> response = userController.updateCurrentUser(
                 new UserDTO(null, "ignored", "Sup3rStr0ngP@ss", UserType.CLIENT, BigDecimal.TEN));
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void updateCurrentUser_forwardsClientControlledTypeAndBalance() {
+        authenticateAs("john");
+        when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
+        when(userService.updateUser(eq("id1"), any(UserDTO.class))).thenReturn(Optional.of(user1));
+
+        UserDTO payload =
+                new UserDTO(null, "ignored", "Sup3rStr0ngP@ss", UserType.ADMIN, new BigDecimal("99999.00"));
+
+        userController.updateCurrentUser(payload);
+
+        ArgumentCaptor<UserDTO> captor = ArgumentCaptor.forClass(UserDTO.class);
+        verify(userService).updateUser(eq("id1"), captor.capture());
+        UserDTO forwarded = captor.getValue();
+
+        assertEquals("john", forwarded.getUsername());
+        assertEquals(UserType.ADMIN, forwarded.getType());
+        assertEquals(new BigDecimal("99999.00"), forwarded.getBalance());
     }
 }
