@@ -181,6 +181,14 @@
 
 ### 3.1 Autenticação e política de passwords (V6)
 
+| Req ASVS | SDR | Teste Automatizado |
+|----------|-----|-------------------|
+| V6.2.1 — passwords ≥ 12 caracteres | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordShorterThanMinimum` · `acceptsPasswordExactlyAtMinimum` · `UserServiceTest.createUser_policyRejects_propagates` |
+| V6.2.4 — rejeição de passwords comprometidas (HIBP) | SDR06 | `UserServiceTest.createUser_breachedPassword_throws` |
+| V6.2.8 — comparação correcta de passwords (BCrypt) | SDR05 | `AuthControllerTest.login_badPassword_throwsBadCredentials` |
+| V6.2.9 — sem truncação de password | SDR05 | `PasswordPolicyServiceTest.rejectsPasswordLongerThanMaximum` · `acceptsPasswordExactlyAtMaximum` |
+| V6.3.1 — anti-brute-force (rate limiting) | SDR04 | `SimpleRateLimiterTest.fifthFailureBlocksKey` · `resetUnblocksKey` · `differentKeysAreTrackedIndependently` · `AuthControllerTest.login_alreadyRateLimited_returns429` · `login_failureTriggersRateLimit_returns429` |
+| V6.3.8 — mensagem de erro genérica (sem enumeração) | SDR07 | `AuthControllerTest.login_badPassword_throwsBadCredentials` · `AuthenticationIntegrationTest.testLoginValidationErrors` |
 | Req ASVS | SDR / TC | Teste Automatizado |
 |----------|----------|-------------------|
 | V2 (lógica de negócio / integridade do saldo) | FR17b, TC39 | `UserTest.deductBalance_insufficient_throws`, `PurchaseServiceTest.createPurchase_insufficientBalance_isRejectedAndNothingPersisted` |
